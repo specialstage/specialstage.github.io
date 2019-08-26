@@ -1,1 +1,31 @@
+body{
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  image-rendering: pixelated;
+  font-family: 'Roboto Mono' monospace;
+  font-size: 11px;
+}
 
+#ui{
+  image-rendering: pixelated;
+  z-index: 99;
+  cursor: hidden;
+  position: fixed;
+}
+
+#renderer{
+  z-index: 0;
+  position: fixed;
+}
+#console {
+  position: fixed;
+  top: 60px;
+  left: 60px;
+  font-family: 'Roboto Mono' monospace;
+  font-size: 12px;
+  background: rgba(0,0,0,0);
+  color: #fff;
+  border-style: 1px solid #000;
+  padding: 10px
+}
