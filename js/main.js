@@ -141,7 +141,7 @@ function mainMenu(){
 	titleBar()
   	ui.textbox('generating stage path...', 2, 9 )
 
-  }, 2, ui.yl-12, 48, 6)
+  }, 2, ui.yl-12, ui.xl-4, 6)
 
 }
 
@@ -169,7 +169,7 @@ function main(){
   		editor.connect()
   		LOAD = 0
 
-  	}, 2, 8, 36, 4)
+  	}, 2, 8, ui.xl-2, 4)
 
   	if( MOBILE ){
   		ui.dpad()

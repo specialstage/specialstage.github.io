@@ -62,48 +62,4 @@ function Control(){
     }
   }
   
-  this.touch = function( event ){
-  var w = window.innerWidth/4
-  
-    switch( event.type ){
-        case( 'touchstart' ):
-        
-        for ( var i in event.touches ){
-          var x = event.touches[i].clientX 
-          if( x > w*2 ){
-          scope.UP = true
-          scope.TOUCHUP = i
-          }
-          if ( x > w && x < w*2 ) {
-          scope.RIGHT = true
-          scope.LEFT  = false
-          }
-          if ( x < w ) {
-          scope.RIGHT = false
-          scope.LEFT  = true
-          }
-        }
-        
-        break
-        case( 'touchend' ):
-        console.log(event)
-        for ( var i in event.changedTouches ){
-          var x = event.changedTouches[i].clientX 
-          if( x > w*2 ){
-          scope.UP = false
-          }
-          if ( x > w && x < w*2 ) {
-          scope.RIGHT = false
-          }
-          if ( x < w ) {
-          scope.LEFT  = false
-          }
-        }
-        
-        break
-        case( 'touchmove' ):
-        
-        break
-    }
-  }
 }

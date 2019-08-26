@@ -28,6 +28,10 @@ function UI(){
   const shift = 8
   
   let TOUCH   = false
+  let TOUCHES = false
+
+  let touches = []
+
   const touch = { x: 0, y: 0 }
   
   let time    = window.performance.now() 
@@ -94,7 +98,8 @@ function UI(){
     lookup[' '] = { x: 26 * size, y: 48 }
     
     window.addEventListener( 'mouseup'  , scope.mouseup )
-    
+    window.addEventListener( 'touchstart' , scope.touchsetup )
+
   }
   
   this.resize = function(){
@@ -118,6 +123,40 @@ function UI(){
     touch.x = event.clientX
     touch.y = event.clientY
     TOUCH = true
+  }
+
+  this.touchsetup = function( event ){
+	window.removeEventListener( 'mouseup', scope.mouseup )
+    window.removeEventListener( 'touchstart' , scope.setup )
+
+    window.addEventListener( 'touchstart' , scope.touchstart )
+    window.addEventListener( 'touchend' , scope.touchend )
+	scope.touchstart(event)
+  }
+
+  this.touchstart = function( event ){
+
+  	TOUCHES = true
+
+	touches = []
+
+  	for( let i in event.touches ){
+	touches.push( { x: event.touches[i].clientX, y: event.touches[i].clientY } )
+  	}
+
+	console.log( touches )
+
+
+  }
+
+  this.touchend = function( event ){
+
+	touches = []
+
+  	for( let i in event.touches ){
+	touches.push( { x: event[i].touches.clientX, y: event[i].touches.clientY } )
+  	}
+
   }
   
   this.clear = function(){
@@ -212,7 +251,15 @@ function UI(){
     
     context.closePath()
     
-    if( TOUCH && touch.x > x && touch.x < x+size*w && touch.y > y && touch.y < y + size*h ){
+    if( TOUCHES ){
+		for( let i in touches ){
+		if( touches[i].x > x && touches[i].x < x+size*w && touches[i].y > y && touches[i].y < y + size*h ){
+		  action()
+		  TOUCH = false
+		}
+		}
+  	}	
+    else if( TOUCH && touch.x > x && touch.x < x+size*w && touch.y > y && touch.y < y + size*h ){
       action()
       TOUCH = false
     }
