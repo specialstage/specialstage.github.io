@@ -102,9 +102,7 @@ function Control(){
 
   this.touchstart = function( event ){
 
-	const touches = event.touchList
-
-	console.log( event )
+	const touches = event.touches
 
 	scope.touches = []
 
