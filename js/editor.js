@@ -48,7 +48,7 @@ function Editor() {
   })
   const GRASS_MATERIAL = new THREE.MeshBasicMaterial({
     wireframe: true,
-    color: 0xa3ff91,
+    color: 0xffffff,
     side: THREE.DoubleSide
   })
 
@@ -201,7 +201,7 @@ function Editor() {
  	let slope = 0
  	let max_turn
 
- 	let trackLength = Math.random()*400+600
+ 	let trackLength = Math.random()*400+500
 
  	while( step < 20 ){
       scope.update()

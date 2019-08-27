@@ -128,7 +128,9 @@ function UI(){
     context.closePath()
   }
   
-  this.button = function( label, action, x_, y_, w, h, UPDATE ){
+  this.button = function( label, action, x_, y_, w, h, TOGGLE ){
+
+  	if( TOGGLE == undefined ) TOGGLE = false
     
     const width = label.length * size
     
@@ -136,9 +138,9 @@ function UI(){
     let y = grid[x_][y_].y
     
 //     context.beginPath()
-    if( UPDATE ){
-    context.clearRect( x, y-size, size * w + size, size * h )
-    }
+//     if( UPDATE ){
+//     context.clearRect( x, y-size, size * w + size, size * h )
+//     }
     
     for( let i in label ){
       context.drawImage(
@@ -206,8 +208,15 @@ function UI(){
     touches = control.touches 
 
 	for( let i in touches ){
-	if( touches[i].x > x && touches[i].x < x+size*w && touches[i].y > y && touches[i].y < y + size*h ){
+	if( touches[i].x > x && touches[i].x < x+size*w && touches[i].y > y && touches[i].y < y + size*h+size ){
+
+	  if( TOGGLE & touches[i].start === true ){
+	  touches[i].start = false
 	  action()
+	  }
+	  else if( !TOGGLE ){
+	  action()
+	  }
 	}
 	}
 
@@ -224,8 +233,8 @@ function UI(){
 
     this.button('l', function(){ control.LEFT = true  }, 1, scope.yl-24, xl-1,  8 )
     this.button('r', function(){ control.RIGHT = true }, xl+1, scope.yl-24, xl-1, 8 )
-    this.button('u', function(){ control.UP = true    }, scope.xl-xl*2+1, scope.yl-24, xl*2-1, 8 )
-    this.button('d', function(){ control.DOWN = true  }, scope.xl-xl*2+1, scope.yl-14, xl*2-1, 8 )
+    this.button('u', function(){ control.UP = true    }, scope.xl-xl*2, scope.yl-24, xl*2-1, 8 )
+    this.button('d', function(){ control.DOWN = true  }, scope.xl-xl*2, scope.yl-14, xl*2-1, 8 )
     
   }
     

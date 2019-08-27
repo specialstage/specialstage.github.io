@@ -16,7 +16,7 @@ let FPS = 0
 
 let MODE = 0
 let LOAD = 0
-
+let MENU = false
 let MOBILE = false
 
 function init(){
@@ -145,19 +145,7 @@ function mainMenu(){
 
 }
 
-function titleBar(){
-	ui.textbox('special stage - development build',  2, 3 )
-	ui.textbox('-', 2, 6 )
-}
-
-function main(){
-
-	FPS = Math.round( 1000 / ( performance.now()-TIME ) )
-	TIME = performance.now()
-
-	const fps = 'fps ' + FPS
-  	ui.textbox(fps,  2, ui.yl-3 )
-	
+function pauseMenu(){
   	ui.button('generate new stage', function(){
 		ui.clear()
 		renderer.clear()
@@ -171,7 +159,43 @@ function main(){
 
   	}, 2, 8, ui.xl-4, 4)
 
-  	if( MOBILE ){
+  	ui.button('reset vehicle', function(){
+		vehicle.reset()
+  	}, 2, 15, ui.xl-4, 4)
+}
+
+function titleBar(){
+	ui.textbox('special stage',  2, 3 )
+	ui.textbox('-', 2, 6 )
+
+// 	menuButton()
+}
+
+function menuButton(){
+
+  	ui.button('menu', function(){
+
+  	ui.clear()
+  	titleBar()
+	MENU = !MENU
+  	}, ui.xl-10, 2, 8, 2, true )
+
+}
+
+function main(){
+
+	FPS = Math.round( 1000 / ( performance.now()-TIME ) )
+	TIME = performance.now()
+
+	const fps = 'fps ' + FPS
+  	ui.textbox(fps,  2, ui.yl-3 )
+
+  	menuButton()
+
+  	if( MENU ){
+		pauseMenu()
+  	}
+  	else if( MOBILE && !MENU ){
   		ui.dpad()
   	}
 

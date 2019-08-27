@@ -73,12 +73,12 @@ function Control(){
   }
 
   this.mousedown = function( event ){
-  	scope.touches[0] = { x: event.clientX, y: event.clientY, active: true } 
+  	scope.touches[0] = { x: event.clientX, y: event.clientY, type: 'start' } 
   }
 
   this.mouseup = function( event ){
 	
-  	scope.touches[0] = { x: event.clientX, y: event.clientY, active: false } 
+  	scope.touches[0] = { x: event.clientX, y: event.clientY, type: 'end' } 
 
   }
 
@@ -104,10 +104,12 @@ function Control(){
 
 	const touches = event.touches
 
+	console.log( event )
+
 	scope.touches = []
 
   	for( let i = 0; i < touches.length; i++ ){
-  		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, active: true }
+  		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, start: true }
   	}
 
   }
@@ -119,7 +121,7 @@ function Control(){
 	const touches = event.touches
 
   	for( let i = 0; i < touches.length; i++ ){
-  		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, active: true }
+  		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, start: false }
   	}
 
   }
@@ -131,7 +133,7 @@ function Control(){
 	const touches = event.touches
 	
   	for( let i = 0; i < touches.length; i++ ){
-  		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, active: true }
+  		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, start: false }
   	}
 
   }
