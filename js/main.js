@@ -169,7 +169,7 @@ function main(){
   		editor.connect()
   		LOAD = 0
 
-  	}, 2, 8, ui.xl-2, 4)
+  	}, 2, 8, ui.xl-4, 4)
 
   	if( MOBILE ){
   		ui.dpad()

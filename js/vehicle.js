@@ -62,7 +62,7 @@ function Vehicle(){
 
       this.force      = 0.012
       this.angleGrip  = 0.9
-      this.grip       = 0.985
+      this.grip       = 0.983
       this.brake      = 0.95
 
       this.mesh = new THREE.LineSegments( new THREE.EdgesGeometry( new THREE.BoxGeometry(1,2,1)), new THREE.MeshBasicMaterial({ wireframe: false }))
