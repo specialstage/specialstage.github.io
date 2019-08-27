@@ -57,7 +57,7 @@ function init(){
   ui = new UI()
   ui.connect()
   
-  window.addEventListener('touchmove', activateTouch )
+  window.addEventListener('touchstart', activateTouch )
   vehicle = new Vehicle()
 
   load()
@@ -66,7 +66,7 @@ function init(){
 
 function activateTouch(){
 	MOBILE = true
-	window.removeEventListener('touchmove', activateTouch)
+	window.removeEventListener('touchstart', activateTouch)
 }
 
 function resize(){

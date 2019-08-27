@@ -112,9 +112,9 @@ function Control(){
   this.touchstart = function( event ){
 // 	event.preventDefault()
 
-	const touches = event.changedTouches
+	const touches = event.touches
 
-	scope.touch = []
+	scope.touches = []
 
   	for( let i = 0; i < touches.length; i++ ){
   		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, active: true }
@@ -124,14 +124,11 @@ function Control(){
 
   this.touchmove = function( event ){
 
-	scope.touch = []
+	scope.touches = []
 
-	const touches = event.changedTouches
+	const touches = event.touches
 
   	for( let i = 0; i < touches.length; i++ ){
-
-		const id = touches[i].identifier
-
   		scope.touches[i] = { x: touches[id].clientX, y: touches[id].clientY, active: true }
   	}
 
@@ -139,15 +136,13 @@ function Control(){
 
   this.touchend = function( event ){
 
-	scope.touch = []
+	scope.touches = []
 	
-	const touches = event.changedTouches
+	const touches = event.touches
 	
+	console.log( event.touches )
   	for( let i = 0; i < touches.length; i++ ){
-
-		const id = touches[i].identifier
-
-  		scope.touches[i] = { x: touches[id].clientX, y: touches[id].clientY, active: false }
+  		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, active: true }
   	}
 
   }

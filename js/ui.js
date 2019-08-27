@@ -204,11 +204,10 @@ function UI(){
     context.closePath()
     
     touches = control.touches 
-    
+
 	for( let i in touches ){
-	if( touches[i].active && touches[i].x > x && touches[i].x < x+size*w && touches[i].y > y && touches[i].y < y + size*h ){
+	if( touches[i].x > x && touches[i].x < x+size*w && touches[i].y > y && touches[i].y < y + size*h ){
 	  action()
-	  TOUCH = false
 	}
 	}
 
@@ -221,10 +220,12 @@ function UI(){
   	control.DOWN = false
   	control.RIGHT = false
 
-    this.button('l', function(){ control.LEFT = true  }, 5, scope.yl-24, 10,  4 )
-    this.button('r', function(){ control.RIGHT = true }, 15, scope.yl-24, 10, 4 )
-    this.button('u', function(){ control.UP = true    }, scope.xl-12, scope.yl-28, 6, 6 )
-    this.button('d', function(){ control.DOWN = true  }, scope.xl-12, scope.yl-20, 6, 6 )
+  	let xl = Math.floor(scope.xl/4)
+
+    this.button('l', function(){ control.LEFT = true  }, 1, scope.yl-24, xl-1,  8 )
+    this.button('r', function(){ control.RIGHT = true }, xl+1, scope.yl-24, xl-1, 8 )
+    this.button('u', function(){ control.UP = true    }, scope.xl-xl*2+1, scope.yl-24, xl*2-1, 8 )
+    this.button('d', function(){ control.DOWN = true  }, scope.xl-xl*2+1, scope.yl-14, xl*2-1, 8 )
     
   }
     
