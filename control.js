@@ -74,13 +74,11 @@ function Control(){
 
   this.mousedown = function( event ){
   	scope.touches[0] = { x: event.clientX, y: event.clientY, active: true } 
-	console.log( scope.touches )
   }
 
   this.mouseup = function( event ){
 	
   	scope.touches[0] = { x: event.clientX, y: event.clientY, active: false } 
-	console.log( scope.touches )
 
   }
 
@@ -110,7 +108,6 @@ function Control(){
   }
 
   this.touchstart = function( event ){
-// 	event.preventDefault()
 
 	const touches = event.touches
 
@@ -140,7 +137,6 @@ function Control(){
 	
 	const touches = event.touches
 	
-	console.log( event.touches )
   	for( let i = 0; i < touches.length; i++ ){
   		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, active: true }
   	}
