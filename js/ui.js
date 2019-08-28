@@ -98,17 +98,17 @@ function UI(){
   this.resize = function(){
     canvas.width  = window.innerWidth
     canvas.height = window.innerHeight
-  }
-  
-  this.mousemove = function( event ){
-    touch.set( event.clientX, event.clientY )
-    if ( event.type === 'mouseup' ){
-      TOUCH = false
-    }
-    else{
-      TOUCH = true
-    }
 
+    this.xl = Math.floor(window.innerWidth/size)
+    this.yl = Math.floor(window.innerHeight/size)
+    
+    for( let x = 0; x < this.xl; x++ ){
+      grid[x] = []
+    for( let y = 0; y < this.yl; y++ ){
+      grid[x][y] = { x: x*size, y: y*size }
+    }
+    }
+    
   }
   
   this.clear = function(){

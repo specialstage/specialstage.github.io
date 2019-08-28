@@ -407,7 +407,6 @@ function Editor() {
 	targetBuffer[1] = new THREE.Geometry()
 
 	geometry.mergeVertices()
-	console.log('Terrain Generation Iteration ' + i)
 
 	for( let s = 0; s < 2; s++ ){	
 
@@ -496,7 +495,6 @@ function Editor() {
 
 	}
 
-	console.log('Generating Noise...')
 	scope.generateNoise( geometry )
 	geometry.verticesNeedUpdate = true
 	geometry.elementsNeedUpdate = true
@@ -507,7 +505,7 @@ function Editor() {
 
 	scene.add( this.terrain )
 
-	console.log('Terrain Generation Completed in ' + ( ( performance.now() - time)/1000 )  )
+// 	console.log('Terrain Generation Completed in ' + ( ( performance.now() - time)/1000 )  )
 //     const points_a = new THREE.Points( debug_a, debug_a_material )
 //     const points_b = new THREE.Points( debug_b, debug_b_material )
 

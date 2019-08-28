@@ -73,13 +73,11 @@ function Control(){
   }
 
   this.mousedown = function( event ){
-  	scope.touches[0] = { x: event.clientX, y: event.clientY, type: 'start' } 
+  	scope.touches[0] = { x: event.clientX, y: event.clientY, start: true } 
   }
 
   this.mouseup = function( event ){
-	
-  	scope.touches[0] = { x: event.clientX, y: event.clientY, type: 'end' } 
-
+  	scope.touches[0] = { x: event.clientX, y: event.clientY, start: false } 
   }
 
   this.touchSetup = function( event ){

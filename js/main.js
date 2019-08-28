@@ -98,21 +98,20 @@ function load(){
 	  vehicle.connect( new THREE.Vector3(0,10,30), editor.surface )
 	  main()
   }
-  else if( LOAD == 2 ){
-	  camera.position.copy( editor.segments.geometry.vertices[ editor.segments.geometry.vertices.length/2 ])
-	  camera.lookAt(camera.position)
-	  camera.position.z -= 600
-	  
+  else if( LOAD == 2 ){	  
 	  editor.generateMesh()
 	  LOAD++
-	  renderer.render( scene, camera )
+// 	  renderer.render( scene, camera )
+  	  renderer.clear()
 	  window.requestAnimationFrame( load )
   }
   else if( LOAD == 1 ){
+  	  ui.clear()
 	  titleBar()
 	  editor.import()
 	  ui.textbox('generating terrain mesh...', 2, 9 )
 	  LOAD ++
+  	  renderer.clear()
 	  window.requestAnimationFrame( load )
   }
   else if( LOAD == 0 ){
@@ -129,7 +128,8 @@ function load(){
 
 function mainMenu(){
 
-  ui.textbox('keybinds', 2, ui.yl-24)
+  ui.textbox('keybinds', 2, ui.yl-26)
+  ui.textbox('activate touch      touch', 2, ui.yl-22)
   ui.textbox('main menu           enter', 2, ui.yl-20)
   ui.textbox('control vehicle     arrow keys', 2, ui.yl-18)
   ui.textbox('reset stage         r', 2, ui.yl-16)
@@ -146,7 +146,9 @@ function mainMenu(){
 }
 
 function pauseMenu(){
+
   	ui.button('generate new stage', function(){
+  		MENU = false
 		ui.clear()
 		renderer.clear()
   		ui.textbox('generating stage path...', 2, 9 )
@@ -161,7 +163,11 @@ function pauseMenu(){
 
   	ui.button('reset vehicle', function(){
 		vehicle.reset()
-  	}, 2, 15, ui.xl-4, 4)
+		ui.clear()
+		titleBar()
+		MENU = false
+
+  	}, 2, 15, ui.xl-4, 4, true)
 }
 
 function titleBar(){
@@ -202,7 +208,11 @@ function main(){
 	vehicle.update()
 	renderer.render(scene, camera)
 	if( LOAD == 0 ){
-	LOAD = 1
+  	ui.clear()
+  	renderer.clear()
+  	LOAD = 1
+  	titleBar()
+  	ui.textbox('generating stage path...', 2, 9)
 	window.requestAnimationFrame(load)
 	}
 	else{
