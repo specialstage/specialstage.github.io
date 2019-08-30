@@ -10,6 +10,13 @@ function Vehicle(){
 
 	// FUCKING CHANGE THIS TO AN INPUT
 	this.checkpoint
+	this.TEXTTIME = ''
+
+	let AT = 0
+	this.best = []
+	for( let i = 0; i < 4; i++ ){
+		this.best[i] = 0
+	}
 
     var intersects   = []
 
@@ -126,7 +133,9 @@ function Vehicle(){
 //       boundry.geometry.verticesNeedUpdate = true
 //       boundry.geometry.elementsNeedUpdate = true
 //       boundry.geometry.computeFaceNormals()
-
+	for( let i = 0; i < 4; i++ ){
+		this.best[i] = 0
+	}
     }
 
     this.disconnect = function(){
@@ -140,6 +149,9 @@ function Vehicle(){
   
     this.update = function(){
 
+	AT = window.performance.now() - startTime
+	this.TEXTTIME = ui.getTextFloat( AT )
+	
     this.UP = control.UP
     this.DOWN = control.DOWN
     this.LEFT = control.LEFT
@@ -231,26 +243,38 @@ function Vehicle(){
           if( objective == 0 ){
             ui.clear()
             startTime = performance.now()
+            AT = 0
             this.check = true
           }
           else if( objective > 0 ){
 
-            time = scope.getTextTime()
 			let text = 'cp' + objective
-			while( text.length < 16-time.length ){
+
+			while( text.length < 16-this.TEXTTIME.length ){
 			text += ' '
 			}
-			text += time
+			
+			text += this.TEXTTIME
 
             ui.textbox( text , 2, 6+objective*2 )
-            this.check = true
+			let rank = ''
 
+			if( this.best[objective-1] > 0 ){
+            rank += ui.getTextFloat( this.best[objective-1]-AT, true )
+			}
+            ui.textbox( rank, Math.floor(ui.xl-2-16+(16-rank.length)), 6+objective*2 )
+
+            if( AT < this.best[objective-1] || this.best[objective-1] == 0 ){
+              this.best[objective-1] = AT
+            }
+
+
+		  this.check = true
           }
           if( objective == 4 ){
+
             objective = 0
-            if( timer < ui.best || ui.best == 0 ){
-              ui.best = timer
-            }
+
           }
           else{
             objective += 1
@@ -274,32 +298,9 @@ function Vehicle(){
 //        }    
 
     }
-    
-	this.getTextTime = function(){
 
-	if( objective > 0 ){
-		let timer = ( window.performance.now()-startTime )
-		let time = ( Math.round( Math.round( timer )/10 )/100 )
-
-// 		time = Math.floor( time )
-		time = time.toString()
-
-		const sec  = Math.floor( Math.floor( timer/1000 )/10 )
-
-			while( time.length <= sec+3 ){
-		    if( time.length == sec+1 ){
-			time = time.concat('.')
-		    }
-			time = time.concat('0')
-			}
-
-		return( time )
-	}
-	else{ return( '0.00' ) }
-	}
-
-    this.getTime = function(){
-      return timer
+    this.getAT = function(){
+      return AT
     }
 
     this.getObjective = function(){
@@ -320,12 +321,12 @@ function Vehicle(){
 
       scope.mesh.lookAt(scope.up.clone().add(scope.position))
       scope.rig(scope.up)
-
+	  ui.clear()
       renderer.clear()
       objective = 0
       timer = 0
       startTime = 0
-
+	  this.TEXTTIME = '0.00'
       editor.resetCheckpoints()
     }
 

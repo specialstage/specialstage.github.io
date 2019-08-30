@@ -241,5 +241,41 @@ function UI(){
     
   }
     
-  
+
+this.getTextFloat = function( input, sign ){
+
+		if( sign === undefined && input > 0 ){ sign = false }
+		else if( input < 0 ){ sign = true }
+
+		let output = ( Math.round( Math.round( input )/10 )/100 )
+		let length = 0
+		let shift = 0
+		let int = Math.floor( output )
+
+		while( int > 1 ){
+			int /= 10
+			length++
+		}
+
+		if( sign ){
+			shift = 1
+		if( output > 0 ){
+			output = '+' + output
+		}
+		}
+
+		
+		output = output.toString()
+
+			while( output.length <= length+2+shift ){
+		    if( output.length <= length+1+shift ){
+			output = output.concat('.')
+		    }
+		    else{
+			output = output.concat('0')
+		    }
+			}
+
+		return( output )
+	}
 }

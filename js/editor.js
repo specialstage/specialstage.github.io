@@ -207,6 +207,7 @@ function Editor() {
  	let max_turn
 
  	let trackLength = Math.random()*400+500
+ 	trackLength = 60
 
  	while( step < 20 ){
       scope.update()
