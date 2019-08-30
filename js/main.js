@@ -164,8 +164,7 @@ function pauseMenu(){
   	ui.button('reset vehicle', function(){
 		vehicle.reset()
 		ui.clear()
-		titleBar()
-		MENU = false
+// 		MENU = false
 
   	}, 2, 15, ui.xl-4, 4, true )
 }
