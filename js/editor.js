@@ -15,6 +15,9 @@ function Editor() {
   const POSITION = new THREE.Vector3().add(DIRECTION)
   const LAST = new THREE.Vector3()
 
+  this.checkpoint = []
+  this.checkpointDisplay = []
+
   const RIG = new THREE.Vector3()
 
   let VIEW = false
@@ -187,6 +190,8 @@ function Editor() {
     this.terrain.geometry.copy( new THREE.Geometry )
     this.terrain.geometry.dispose()
 
+    this.removeCheckpoints()
+
   }
   
   this.import = function(){ 
@@ -201,7 +206,8 @@ function Editor() {
  	let slope = 0
  	let max_turn
 
- 	let trackLength = Math.random()*400+500
+//  	let trackLength = Math.random()*400+500
+ 	let trackLength = 60
 
  	while( step < 20 ){
       scope.update()
@@ -564,5 +570,94 @@ function Editor() {
       geometry.vertices[i].z += Math.floor( ( noise[i] )*factor )
     }
   }
+
+	this.generateCheckpoints = function(){
+
+		const geometry = this.segments.geometry
+
+		var length = geometry.vertices.length
+		var q = Math.floor(length/4) - Math.floor(length/4)%10
+
+		scope.checkpoint[0] = scope.generateCheckpoint(geometry.vertices[6],geometry.vertices[7], 0)
+		scope.checkpoint[1] = scope.generateCheckpoint(geometry.vertices[q],geometry.vertices[q+1], 1)
+		scope.checkpoint[2] = scope.generateCheckpoint(geometry.vertices[q*2],geometry.vertices[q*2+1], 2)
+		scope.checkpoint[3] = scope.generateCheckpoint(geometry.vertices[q*3],geometry.vertices[q*3+1], 3)
+		scope.checkpoint[4] = scope.generateCheckpoint(geometry.vertices[length-14],geometry.vertices[length-13], 4)
+
+		for( let i in scope.checkpoint ){
+		scene.add( scope.checkpoint[i] )
+		scene.add( scope.checkpointDisplay[i] )
+		}
+	}
+
+	this.removeCheckpoints = function(){
+
+		for( let i in scope.checkpoint ){
+		scene.remove( scope.checkpoint[i] )
+		scene.remove( scope.checkpointDisplay[i] )
+
+		scope.checkpoint[i].geometry.dispose()
+		scope.checkpointDisplay[i].geometry.dispose()
+		}
+
+	}
+
+	this.resetCheckpoints = function(){
+		
+		for( let i in scope.checkpoint ){
+		scope.checkpoint[i].material.color.setHex( 0xf95544 )
+		}
+
+	}
+
+	this.generateCheckpoint = function(v1,v2, i){
+
+		var geometry = new THREE.Geometry()
+
+		d = new THREE.Vector3().copy(v1).sub(v2).multiplyScalar(0.25)
+
+		a = new THREE.Vector3().copy(v1).add(d)
+		b = new THREE.Vector3().copy(v2).sub(d)
+
+		geometry.vertices.push( new THREE.Vector3(a.x,a.y,a.z-1) )
+		geometry.vertices.push( new THREE.Vector3(a.x,a.y,a.z+3) )
+		geometry.vertices.push( new THREE.Vector3(b.x,b.y,b.z+3) )
+
+		geometry.vertices.push( new THREE.Vector3(b.x,b.y,b.z+3) )
+		geometry.vertices.push( new THREE.Vector3(b.x,b.y,b.z-1) )
+		geometry.vertices.push( new THREE.Vector3(a.x,a.y,a.z-1) )
+
+		geometry.faces.push(new THREE.Face3(0,1,2))
+		geometry.faces.push(new THREE.Face3(3,4,5))
+
+		var lines = new THREE.Geometry()
+
+		lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z) )
+		lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z+3) )
+		lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z+3) )
+
+		var vv1 = new THREE.Vector3().copy(d).multiplyScalar(-0.5).add(v1)
+		vv1.z += 3
+		lines.vertices.push(vv1)
+
+		vv2 = vv1.clone()
+		vv2.z -= 0.5
+
+		lines.vertices.push(vv2)
+		lines.vertices.push(vv1)
+		lines.vertices.push(vv2)
+		lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z+2.5) )
+
+		var material = new THREE.MeshBasicMaterial({ color: 0xf95544, side: THREE.DoubleSide, wireframe: false, fog: false })
+		var mesh = new THREE.Mesh(geometry, material)
+		mesh.visible = false
+
+		scope.checkpointDisplay[i] = new THREE.LineSegments(lines, material)
+		scene.add(scope.checkpointDisplay[i])
+
+		mesh.name = 'Checkpoint'
+		return mesh
+
+	}
 
 }

@@ -8,6 +8,9 @@ function Vehicle(){
     //var position = 305
     this.start
 
+	// FUCKING CHANGE THIS TO AN INPUT
+	this.checkpoint
+
     var intersects   = []
 
     var normal = new THREE.Vector3(0,0,1)
@@ -43,7 +46,7 @@ function Vehicle(){
       camera.fov  = 90
       camera.updateProjectionMatrix()
       this.position.copy(_position)
-      this.position.z += 10
+      this.position.z += 1
       this.start = new THREE.Vector3().copy(this.position)
       this.last = new THREE.Vector3().copy(this.position)
 
@@ -108,6 +111,8 @@ function Vehicle(){
       surface.geometry.verticesNeedUpdate = true
       surface.geometry.elementsNeedUpdate = true
       surface.geometry.computeFaceNormals()
+
+      this.checkpoint = editor.checkpoint
 
 //       for( var i in surface.geometry.vertices ){
 //         surface.geometry.vertices[i].z += 1
@@ -211,6 +216,46 @@ function Vehicle(){
             this.vel.add(gravity);
         }
 
+ intersects = []
+        this.ray.copy(this.last)
+        this.ray.sub(this.position)
+        this.raycaster.far = this.ray.length()
+        this.ray.normalize()
+
+        this.checkpoint[objective].raycast( this.raycaster, intersects )
+        this.check = false
+
+        if( intersects.length > 0 ){
+          editor.checkpointDisplay[objective].material.color.setHex(0x1fff7f)
+
+          if( objective == 0 ){
+            ui.clear()
+            startTime = performance.now()
+            this.check = true
+          }
+          else if( objective > 0 ){
+
+            time = scope.getTextTime()
+			let text = 'cp' + objective
+			while( text.length < 16-time.length ){
+			text += ' '
+			}
+			text += time
+
+            ui.textbox( text , 2, 6+objective*2 )
+            this.check = true
+
+          }
+          if( objective == 4 ){
+            objective = 0
+            if( timer < ui.best || ui.best == 0 ){
+              ui.best = timer
+            }
+          }
+          else{
+            objective += 1
+          }
+        }
 
         //Check Bounds
 //         intersects = []
@@ -229,6 +274,29 @@ function Vehicle(){
 //        }    
 
     }
+    
+	this.getTextTime = function(){
+
+	if( objective > 0 ){
+		let timer = ( window.performance.now()-startTime )
+		let time = ( Math.round( Math.round( timer )/10 )/100 )
+
+// 		time = Math.floor( time )
+		time = time.toString()
+
+		const sec  = Math.floor( Math.floor( timer/1000 )/10 )
+
+			while( time.length <= sec+3 ){
+		    if( time.length == sec+1 ){
+			time = time.concat('.')
+		    }
+			time = time.concat('0')
+			}
+
+		return( time )
+	}
+	else{ return( '0.00' ) }
+	}
 
     this.getTime = function(){
       return timer
@@ -257,6 +325,8 @@ function Vehicle(){
       objective = 0
       timer = 0
       startTime = 0
+
+      editor.resetCheckpoints()
     }
 
     this.rig = function(up){

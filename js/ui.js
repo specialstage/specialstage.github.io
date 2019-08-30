@@ -128,10 +128,11 @@ function UI(){
     context.closePath()
   }
   
-  this.button = function( label, action, x_, y_, w, h, TOGGLE ){
+  this.button = function( label, action, x_, y_, w, h, TOGGLE, OUTLINE ){
 
   	if( TOGGLE == undefined ) TOGGLE = false
-    
+    if( OUTLINE == undefined ) OUTLINE = true
+
     const width = label.length * size
     
     let x = grid[x_][y_].x
@@ -155,6 +156,7 @@ function UI(){
         size )
     }
 
+	if( OUTLINE ){
     context.drawImage(
       sheet,
       0,
@@ -202,6 +204,7 @@ function UI(){
       1,
       size+size*h
     )
+	}
     
     context.closePath()
     

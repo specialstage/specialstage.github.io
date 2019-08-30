@@ -93,13 +93,13 @@ function load(){
 
   if( LOAD == 3 ){
 	  ui.clear()	
-	  titleBar() 
 	  editor.disconnect()
-	  vehicle.connect( new THREE.Vector3(0,10,30), editor.surface )
+	  vehicle.connect( new THREE.Vector3(0,10,5), editor.surface )
 	  main()
   }
   else if( LOAD == 2 ){	  
 	  editor.generateMesh()
+	  editor.generateCheckpoints()
 	  LOAD++
 // 	  renderer.render( scene, camera )
   	  renderer.clear()
@@ -167,7 +167,7 @@ function pauseMenu(){
 		titleBar()
 		MENU = false
 
-  	}, 2, 15, ui.xl-4, 4, true)
+  	}, 2, 15, ui.xl-4, 4, true )
 }
 
 function titleBar(){
@@ -182,9 +182,8 @@ function menuButton(){
   	ui.button('menu', function(){
 
   	ui.clear()
-  	titleBar()
 	MENU = !MENU
-  	}, ui.xl-10, 2, 8, 2, true )
+  	}, ui.xl-10, 2, 8, 2, true, false )
 
 }
 
@@ -192,9 +191,6 @@ function main(){
 
 	FPS = Math.round( 1000 / ( performance.now()-TIME ) )
 	TIME = performance.now()
-
-	const fps = 'fps ' + FPS
-  	ui.textbox(fps,  2, ui.yl-3 )
 
   	menuButton()
 
@@ -206,17 +202,27 @@ function main(){
   	}
 
 	vehicle.update()
+
 	renderer.render(scene, camera)
+
+	const fps = 'fps ' + FPS
+  	ui.textbox(fps,  2, ui.yl-3 )
+  	
+  	ui.textbox( vehicle.getTextTime(), 2, 3 )
+
+  	menuButton()
+
 	if( LOAD == 0 ){
-  	ui.clear()
-  	renderer.clear()
-  	LOAD = 1
-  	titleBar()
-  	ui.textbox('generating stage path...', 2, 9)
-	window.requestAnimationFrame(load)
+		ui.clear()
+		renderer.clear()
+		LOAD = 1
+		titleBar()
+
+		ui.textbox('generating stage path...', 2, 9)
+		window.requestAnimationFrame(load)
 	}
 	else{
-	window.requestAnimationFrame(main)
+		window.requestAnimationFrame(main)
 	}
 
 }
