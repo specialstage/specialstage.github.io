@@ -287,7 +287,6 @@ this.detect = function(){
 		  this.best[objective-1] = AT
 
 		}
-		  console.log(this.best[objective-1]-AT)
 
 	  this.check = true
 
