@@ -1,16 +1,79 @@
+Planned
+
+	S T A G E U P D A T E
+
+	Path
+
+		Weighted path feature control
+
+			Minmax percentage basedr controls
+			Biomes
+
+		Depth first search
+		Repeat turn conditions
+		Uphill conditions
+		Lane widths
+
+	Terrain
+
+		Terrain Generation
+
+			Improve data structure
+			Fill holes
+			Fix extrusion vector averaging
+			Generate collision mesh
+			Compute vertex normals
+			Coloring
+	
+	Features
+
+		Trees
+		Barriers
+		
+	Collision
+
+		Spatial partitioning
+
+		New collision types
+
+			Terrain
+			Boundry
+			Timeout
+
+	Physics
+
+		Refresh rate detection & DT
+
+	Modes
+
+		Roguelike Rally
+			
+			Track time hueristics
+			Damage & reward system
+			Items...
+
+		Local Multiplayer
+
+	UI
+
+		Redeuce updates
+		
+
 -
-September 1, 2019
 
-Fixed floating point text formating and ranked time display.
+September 2 2019
 
+	Fixed floating point text formating and ranked time display.
+	Added KM/H velocity ui output
 -
 August 29, 2019
 
-Checkpoint system and vehicle timer implemented.
+	Checkpoint system and vehicle timer implemented.
 
-Best time metrics implemented.
+	Best time metrics implemented.
 
-Method for creating formatted numerical strings implmeneted.
+	Method for creating formatted numerical strings implmeneted.
 
 -
+
 Previously

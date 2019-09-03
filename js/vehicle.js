@@ -152,7 +152,6 @@ this.update = function(){
 	if( !this.END ){
 	AT = window.performance.now() - startTime
 	}
-	this.TEXTTIME = ui.getTextFloat( AT )
 
 	this.UP = control.UP
 	this.DOWN = control.DOWN
@@ -221,7 +220,8 @@ this.update = function(){
 	  scope.reset()
 	}
 
-	this.VELOCITY = Math.round(this.vel.length()*160)
+	this.VELOCITY = Math.round( ( this.vel.length()*60/1000)*3600 )
+	this.TEXTTIME = ui.getTextFloat( AT )
 
 }
 
