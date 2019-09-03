@@ -95,6 +95,7 @@ function load(){
 	  ui.clear()	
 	  editor.disconnect()
 	  vehicle.connect( new THREE.Vector3(0,10,5), editor.surface )
+	  vehicle.reset()
 	  main()
   }
   else if( LOAD == 2 ){	  
@@ -153,7 +154,7 @@ function pauseMenu(){
 		renderer.clear()
   		ui.textbox('generating stage path...', 2, 9 )
 	    titleBar()
-
+		vehicle.reset()
 		vehicle.disconnect()
   		editor.reset()
   		editor.connect()
@@ -207,8 +208,10 @@ function main(){
 	const fps = 'fps ' + FPS
   	ui.textbox(fps,  2, ui.yl-3 )
   	
+  	if( vehicle.START ){
   	ui.textbox( vehicle.TEXTTIME, 2, 3 )
-
+  	ui.textbox( 'vel' + ' ' + vehicle.VELOCITY, 2, ui.yl-5 )
+  	}
   	menuButton()
 
 	if( LOAD == 0 ){

@@ -1,0 +1,16 @@
+-
+September 1, 2019
+
+Fixed floating point text formating and ranked time display.
+
+-
+August 29, 2019
+
+Checkpoint system and vehicle timer implemented.
+
+Best time metrics implemented.
+
+Method for creating formatted numerical strings implmeneted.
+
+-
+Previously

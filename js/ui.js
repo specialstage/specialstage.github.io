@@ -240,42 +240,83 @@ function UI(){
     this.button('d', function(){ control.DOWN = true  }, scope.xl-xl*2, scope.yl-14, xl*2-1, 8 )
     
   }
-    
 
 this.getTextFloat = function( input, sign ){
 
-		if( sign === undefined && input > 0 ){ sign = false }
-		else if( input < 0 ){ sign = true }
+	let decimal = Math.floor( Math.abs(input)/10 )/1000
+	let integer = Math.floor( Math.abs(input)/1000 )
 
-		let output = ( Math.round( Math.round( input )/10 )/100 )
-		let length = 0
-		let shift = 0
-		let int = Math.floor( output )
+	decimal *= 10
+	decimal -= integer
+	decimal = Math.floor( decimal * 100 )
 
-		while( int > 1 ){
-			int /= 10
-			length++
-		}
+	if( integer == 0 && decimal == 0 ){
+	return('0.00')
+	}
+	else{
 
-		if( sign ){
-			shift = 1
-		if( output > 0 ){
-			output = '+' + output
-		}
-		}
+	decimal = decimal.toString()
+	integer = integer.toString()
+
+	if( decimal.length < 2 ){
+		decimal += '0'
+	}
+
+	if( sign && input > 0 ){
+		integer = '+' + integer
+	}
+	else if( input < 0 ){
+		integer = '-' + integer
+	}
+
+	return integer + '.' + decimal
+
+	}
+
+}
+
+// this.getTextFloat = function( input, sign ){
+
+// 	// SUBTRACT INTEGER FROM FLOAT THEN ADJUST LENGTHS SO EASY WHAT IS THIS BELOW YOU
+
+// 		if( sign === undefined && input > 0 ){ sign = false }
+// 		if( input < 0 ){ sign = true }
+
+// 		let output = ( Math.round( Math.round( input )/10 )/100 )
+
+// 		if( output == 0 ){
+// 			return('0.00')
+// 		}
+// 		else{
+
+// 		let length = 0
+// 		let shift = 0
+// 		let int = Math.floor( output )
+
+// 		while( int > 1 ){
+// 			int /= 10
+// 			length++
+// 		}
+
+// 		if( sign ){
+// 			shift = 1
+// 		if( input > 0 ){
+// 			output = '+' + output
+// 		}
+// 		}
 
 		
-		output = output.toString()
+// 		output = output.toString()
 
-			while( output.length <= length+2+shift ){
-		    if( output.length <= length+1+shift ){
-			output = output.concat('.')
-		    }
-		    else{
-			output = output.concat('0')
-		    }
-			}
+// 			while( output.length <= length+2+shift ){
+// 		    if( output.length <= length+1+shift ){
+// 			output += '.'
+// 		    }
+// 			output += '0'
+// 			}
 
-		return( output )
-	}
+// 		return( output )
+
+// 		}
+// 	}
 }
