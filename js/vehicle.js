@@ -10,8 +10,8 @@ var scope = this
 // FUCKING CHANGE THIS TO AN INPUT
 this.checkpoint
 this.TEXTTIME = ''
+let TIMEOUT = 0
 
-let AT = 0
 this.best = []
 for( let i = 0; i < 4; i++ ){
 this.best[i] = 0
@@ -37,13 +37,17 @@ var objective = 0
 var timer = 0
 var startTime = 0
 
+let AT = 0
 let DT = 0
+let CT = []
 let DELTA = []
 let SAMPLE = 0
 
 this.START = false
 this.END = false
 this.VELOCITY = 0
+
+this.OBJECTIVE = 0
 
 this.UP
 this.DOWN
@@ -149,14 +153,10 @@ this.disconnect = function(){
 
 this.update = function(){
 
-	if( !this.END ){
-	AT = window.performance.now() - startTime
-	}
-
-	this.UP = control.UP
-	this.DOWN = control.DOWN
-	this.LEFT = control.LEFT
-	this.RIGHT = control.RIGHT
+	this.UP    = ( !this.END ) ? control.UP    : false
+	this.DOWN  = ( !this.END ) ? control.DOWN  : false
+	this.LEFT  = ( !this.END ) ? control.LEFT  : false
+	this.RIGHT = ( !this.END ) ? control.RIGHT : false
 
 	DT = 1
 
@@ -177,7 +177,7 @@ this.update = function(){
 
 	}
 
-}
+	}
 
 	this.vel.multiplyScalar(this.grip)
 
@@ -212,6 +212,7 @@ this.update = function(){
 	this.mesh.rotateOnAxis( this.up, this.rotation)
 
 	this.emit()
+
 	this.rig( lookAt )
 
 	lookAt.sub( this.position )
@@ -221,7 +222,13 @@ this.update = function(){
 	}
 
 	this.VELOCITY = Math.round( ( this.vel.length()*60/1000)*3600 )
+
+	if( this.START && !this.END ){
+	AT = Math.floor( ( window.performance.now() - startTime )/10 )/100
+	}
+
 	this.TEXTTIME = ui.getTextFloat( AT )
+	this.OBJECTIVE = objective
 
 }
 
@@ -238,11 +245,19 @@ this.detect = function(){
 
 		  this.position.copy(intersects[0].point)
 		  normal.copy(intersects[0].face.normal)
+		  TIMEOUT = 0
 
 	}
 	else if( intersects.length === 0 ){
 
 		this.vel.add(gravity);
+		TIMEOUT ++
+		if( TIMEOUT === 60 ){
+			ui.clear()
+			control.clear()
+			MENU = true
+			this.END = true
+		}
 
 	}
 
@@ -259,42 +274,27 @@ this.detect = function(){
 	if( intersects.length > 0 ){
 
 		editor.checkpointDisplay[objective].material.color.setHex(0x1fff7f)
-
+		
 		if( objective > 0 ){
 
-			let text = 'cp' + objective
+			CT[objective-1] = AT
 
-			while( text.length < 16-this.TEXTTIME.length ){
-			text += ' '
-
-		}
-
-		text += this.TEXTTIME
-
-		ui.textbox( text , 2, 6+objective*2 )
-		let rank = ''
-
-		if( this.best[objective-1] > 0 ){
-
-			rank += ui.getTextFloat( this.best[objective-1]-AT, true )
+		  this.display()
+		  this.check = true
 
 		}
 
-		ui.textbox( rank, Math.floor(ui.xl-2-16+(16-rank.length)), 6+objective*2 )
-
-		if( AT < this.best[objective-1] || this.best[objective-1] == 0 ){
-
-		  this.best[objective-1] = AT
-
-		}
-
-	  this.check = true
-
-	  }
 	  if( objective == 4 ){
 
 		objective = 0
 		this.END = true
+
+		if( AT < editor.best[3]  ){
+
+		for( let i = 0; i < editor.best.length; i++)
+		  editor.best[i] = CT[i]
+		}
+
 	  }
 	  else{
 
@@ -342,16 +342,23 @@ this.reset = function(){
 
 	editor.resetCheckpoints()
 
+	TIMEOUT = 0
+	CT.length = 0
+	AT = 0
+	MENU = false
 }
 
 this.rig = function(up){
 
 	const cameraTarget = this.dir.clone()
 	cameraTarget.multiplyScalar(-10)
+	
 	cameraTarget.add( this.position )
 	cameraTarget.z += 6
 
+	if( !this.END ){
 	camera.position.lerp( cameraTarget, 0.5)
+	}
 	camera.lookAt(this.position)
 
 }
@@ -409,6 +416,29 @@ this.emit = function(){
 	this.emitter.geometry.verticesNeedUpdate = true
 	this.emitter.geometry.colorsNeedUpdate = true
 	this.emitter.geometry.computeBoundingSphere();
+
+}
+
+this.display = function(){
+	
+	for( let i = 0; i < CT.length; i++ ){
+
+		let n = i+1
+		let text = 'cp' + n
+		let cp = ui.getTextFloat( CT[i] )
+		while( text.length < 16-cp.length ){
+			
+			text += ' '
+
+		}
+
+		text += cp
+
+		ui.textbox( text , 2, 6+i*2 )
+
+		let rank = ui.getTextFloat( ( editor.best[i]-CT[i] ), true )
+		ui.textbox( rank, Math.floor(ui.xl-2-16+(16-rank.length)), 6+i*2 )
+	}
 
 }
 

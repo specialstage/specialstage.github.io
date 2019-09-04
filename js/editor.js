@@ -1,19 +1,19 @@
 function Editor() {
-
-  // Data structure
-  // Declaration
-  // TRACK_SIZE, MAX_STRAIGHT, MAX_TURN, MAX_REPEAT_TURN, NOISE_SEED
-  // ANGLE, SLOPE, CAMBER, LANE_WIDTH_A, LANE_WIDTH_B, LANE_FEATURE, FEATURE_LANE_A, FEATURE_LANE_B,   
+ 
   const scope = this
   const NODES = []
+
+  const HEURISTIC = ( 36+Math.random()-0.5 )/2
 
   const UP = new THREE.Vector3(0, 0, 1)
   const PITCH = new THREE.Vector3(1, 0, 0)
   const LANE_A = new THREE.Vector3(4, 3, 0)
   const LANE_B = new THREE.Vector3(-4, 3, 0)
+
   const DIRECTION = new THREE.Vector3(0, 3, 0)
   const POSITION = new THREE.Vector3().add(DIRECTION)
-  const LAST = new THREE.Vector3()
+
+  scope.start = new THREE.Vector3()
 
   this.checkpoint = []
   this.checkpointDisplay = []
@@ -34,6 +34,8 @@ function Editor() {
 
   let lane_width_a = 1
   let lane_width_b = 1
+
+  this.best = []
 
   const PERIMETER_MATERIAL = new THREE.LineBasicMaterial({
     color: 0xffffff
@@ -88,7 +90,7 @@ function Editor() {
   let lights = new THREE.HemisphereLight(0x3cffe4, 0xffffff)
   lights.name = 'Lights'
 
-  scene.add(this.cursor)
+//   scene.add(this.cursor)
   scene.add(this.perimeter)
   scene.add(this.segments)
 //   scene.add(this.terrain)
@@ -196,6 +198,7 @@ function Editor() {
   
   this.import = function(){ 
  
+ 	scene.add( this.cursor )
  	let step = 0
 
  	let straight = true
@@ -206,10 +209,10 @@ function Editor() {
  	let slope = 0
  	let max_turn
 
- 	let trackLength = Math.random()*400+300
-//  	trackLength = 60
+ 	let trackLength = Math.random()*500+300
+//  	trackLength = 120
 
- 	while( step < 20 ){
+ 	while( step < 40 ){
       scope.update()
       scope.extrude()
       renderer.render(scene, camera)
@@ -260,13 +263,32 @@ function Editor() {
 	SLOPE = -slope
 	ANGLE = 0
 	step = 0
- 	while( step < 30 ){
+ 	while( step < 40 ){
       scope.update()
       scope.extrude()
       renderer.render(scene, camera)
 
       step++
     }
+
+    scene.remove( this.cursor )
+
+	scene.remove( this.perimeter )
+	const buffer = this.perimeter.geometry.clone()
+	
+    buffer.vertices.push(
+		buffer.vertices[buffer.vertices.length-1].clone(),
+		buffer.vertices[buffer.vertices.length-3].clone()
+	)
+
+	buffer.verticesNeedUpdate = true
+
+	this.perimeter.geometry.dispose()
+	this.perimeter.geometry = buffer
+
+	scene.add( this.perimeter )
+
+
     
   }
 
@@ -511,19 +533,12 @@ function Editor() {
 
 	scene.add( this.terrain )
 
-// 	console.log('Terrain Generation Completed in ' + ( ( performance.now() - time)/1000 )  )
-//     const points_a = new THREE.Points( debug_a, debug_a_material )
-//     const points_b = new THREE.Points( debug_b, debug_b_material )
-
-//     scene.add( points_a )
-//     scene.add( points_b )
-
   }
 
   this.generateNoise = function( geometry ){
+
     const perlin = new ImprovedNoise()
     const noise = []
-//     noise.length = geometry.vertices.length
     let quality = 20
 
     let hi = 0
@@ -575,18 +590,35 @@ function Editor() {
 
 		const geometry = this.segments.geometry
 
-		var length = geometry.vertices.length
-		var q = Math.floor(length/4) - Math.floor(length/4)%10
+		const length = geometry.vertices.length-( 120 )
+		const offset = 60
+		var q = ( Math.floor(length/4) - Math.floor(length/4)%2 )
 
-		scope.checkpoint[0] = scope.generateCheckpoint(geometry.vertices[6],geometry.vertices[7], 0)
-		scope.checkpoint[1] = scope.generateCheckpoint(geometry.vertices[q],geometry.vertices[q+1], 1)
-		scope.checkpoint[2] = scope.generateCheckpoint(geometry.vertices[q*2],geometry.vertices[q*2+1], 2)
-		scope.checkpoint[3] = scope.generateCheckpoint(geometry.vertices[q*3],geometry.vertices[q*3+1], 3)
-		scope.checkpoint[4] = scope.generateCheckpoint(geometry.vertices[length-14],geometry.vertices[length-13], 4)
+		scope.checkpoint[0] = scope.generateCheckpoint(geometry.vertices[offset],geometry.vertices[offset+1], 0)
+		scope.checkpoint[1] = scope.generateCheckpoint(geometry.vertices[q+offset],geometry.vertices[q+1+offset], 1)
+		scope.checkpoint[2] = scope.generateCheckpoint(geometry.vertices[q*2+offset],geometry.vertices[q*2+1+offset], 2)
+		scope.checkpoint[3] = scope.generateCheckpoint(geometry.vertices[q*3+offset],geometry.vertices[q*3+1+offset], 3)
+		scope.checkpoint[4] = scope.generateCheckpoint(geometry.vertices[q*4+offset],geometry.vertices[q*4+1+offset], 4)
+
+		scope.start.copy(geometry.vertices[offset-1])
+		scope.start.sub(geometry.vertices[offset-1+1])
+		scope.start.multiplyScalar(-0.75)
+		scope.start.add(geometry.vertices[offset-1])
 
 		for( let i in scope.checkpoint ){
 		scene.add( scope.checkpoint[i] )
 		scene.add( scope.checkpointDisplay[i] )
+		}
+
+		let d1 = q
+		let d2 = q*2
+		let d3 = q*3
+		let d4 = q*4
+
+		for( let i = 0; i < 4; i++ ){
+
+			this.best[i] = ( q*( i+1 ) )/( HEURISTIC )
+
 		}
 	}
 

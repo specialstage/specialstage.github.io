@@ -243,80 +243,38 @@ function UI(){
 
 this.getTextFloat = function( input, sign ){
 
-	let decimal = Math.floor( Math.abs(input)/10 )/1000
-	let integer = Math.floor( Math.abs(input)/1000 )
+	let text = Math.floor( Math.abs( input * 100 ) )
+	text = text.toString()
 
-	decimal *= 10
-	decimal -= integer
-	decimal = Math.floor( decimal * 100 )
+	let integer = text.slice( 0,text.length-2 )
+	let float 	= text.slice( text.length-2,text.length )
 
-	if( integer == 0 && decimal == 0 ){
-	return('0.00')
+	if( input == 0 ){
+	
+		return( '0.00' )
+
 	}
 	else{
 
-	decimal = decimal.toString()
-	integer = integer.toString()
+		if( integer.length == 0 ){
+			integer = '0'
+		}
+		if( float.length < 2 ){
+			float += '0'
+		}
 
-	if( decimal.length < 2 ){
-		decimal += '0'
+		if( sign && input > 0 ){
+			integer = '+' + integer
+		}
+		else if( input < 0 ){
+			integer = '-' + integer
+		}
+
+		text = integer + '.' + float
+
+		return text
+
 	}
-
-	if( sign && input > 0 ){
-		integer = '+' + integer
-	}
-	else if( input < 0 ){
-		integer = '-' + integer
-	}
-
-	return integer + '.' + decimal
-
-	}
-
 }
 
-// this.getTextFloat = function( input, sign ){
-
-// 	// SUBTRACT INTEGER FROM FLOAT THEN ADJUST LENGTHS SO EASY WHAT IS THIS BELOW YOU
-
-// 		if( sign === undefined && input > 0 ){ sign = false }
-// 		if( input < 0 ){ sign = true }
-
-// 		let output = ( Math.round( Math.round( input )/10 )/100 )
-
-// 		if( output == 0 ){
-// 			return('0.00')
-// 		}
-// 		else{
-
-// 		let length = 0
-// 		let shift = 0
-// 		let int = Math.floor( output )
-
-// 		while( int > 1 ){
-// 			int /= 10
-// 			length++
-// 		}
-
-// 		if( sign ){
-// 			shift = 1
-// 		if( input > 0 ){
-// 			output = '+' + output
-// 		}
-// 		}
-
-		
-// 		output = output.toString()
-
-// 			while( output.length <= length+2+shift ){
-// 		    if( output.length <= length+1+shift ){
-// 			output += '.'
-// 		    }
-// 			output += '0'
-// 			}
-
-// 		return( output )
-
-// 		}
-// 	}
 }

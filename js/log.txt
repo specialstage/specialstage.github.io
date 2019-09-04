@@ -11,6 +11,7 @@ Planned
 
 		Depth first search
 		Repeat turn conditions
+		Shifting turn conditions
 		Uphill conditions
 		Lane widths
 
@@ -29,7 +30,9 @@ Planned
 
 		Trees
 		Barriers
-		
+
+	Physics
+
 	Collision
 
 		Spatial partitioning
@@ -39,8 +42,7 @@ Planned
 			Terrain
 			Boundry
 			Timeout
-
-	Physics
+		Predictive Collisions
 
 		Refresh rate detection & DT
 
@@ -53,20 +55,34 @@ Planned
 			Items...
 
 		Local Multiplayer
+		Replay
 
 	UI
 
-		Redeuce updates
-		
+		Redeuce redraw updates
 
+	Stage Editor
+		
+-
+
+September 4 2019
+
+Checkpoint & Objective updates
+
+	Added a simple time hueristic for generating intial stage times.	
+	Continued reworking floating point text formatting.
+	Changed Actual Time measurement from MS to S to avoid rounding errors.
+	Added Results template
 -
 
 September 2 2019
 
 	Fixed floating point text formating and ranked time display.
 	Added KM/H velocity ui output
+
 -
-August 29, 2019
+
+August 29 2019
 
 	Checkpoint system and vehicle timer implemented.
 

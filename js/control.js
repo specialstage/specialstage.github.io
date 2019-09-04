@@ -98,11 +98,13 @@ function Control(){
 
   }
 
+  this.clear = function(){
+  	scope.touches = []
+  }
+
   this.touchstart = function( event ){
 
 	const touches = event.touches
-
-	console.log( event )
 
 	scope.touches = []
 

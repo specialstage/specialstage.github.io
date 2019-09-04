@@ -5,10 +5,9 @@ let scene, camera, renderer, vehicle, control, ui
 let editor
 let up
 
-const BUILD = '20190823-1A'
-let TEST = false
+let TEST   = false
 let IMPORT = false
-let BG = 0x101010
+let BG 	   = 0x101010
 
 let TIME = 0
 let DT = 0
@@ -28,14 +27,13 @@ function init(){
 
   up = new THREE.Vector3(0,0,1)
   camera = new THREE.PerspectiveCamera()
-//   camera = new THREE.OrthographicCamera()
 
   camera.up = up
   camera.lookAt(0,0,0)
 
     camera.fov   = 50
     camera.near  = 0.001
-    camera.far   = 10000
+    camera.far   = 1000
     
     camera.name = 'Camera'
     scene.add(camera)
@@ -94,7 +92,7 @@ function load(){
   if( LOAD == 3 ){
 	  ui.clear()	
 	  editor.disconnect()
-	  vehicle.connect( new THREE.Vector3(0,10,5), editor.surface )
+	  vehicle.connect( editor.start, editor.surface )
 	  vehicle.reset()
 	  main()
   }
@@ -108,6 +106,8 @@ function load(){
   }
   else if( LOAD == 1 ){
   	  ui.clear()
+	  control.clear()
+	  MENU = false
 	  titleBar()
 	  editor.import()
 	  ui.textbox('generating terrain mesh...', 2, 9 )
@@ -131,7 +131,6 @@ function mainMenu(){
 
   ui.textbox('keybinds', 2, ui.yl-26)
   ui.textbox('activate touch      touch', 2, ui.yl-22)
-  ui.textbox('main menu           enter', 2, ui.yl-20)
   ui.textbox('control vehicle     arrow keys', 2, ui.yl-18)
   ui.textbox('reset stage         r', 2, ui.yl-16)
 
@@ -160,14 +159,15 @@ function pauseMenu(){
   		editor.connect()
   		LOAD = 0
 
-  	}, 2, 8, ui.xl-4, 4)
+  	}, 2, 6, ui.xl-4, 4)
 
-  	ui.button('reset vehicle', function(){
+  	ui.button('restart stage', function(){
+  		MENU = false
 		vehicle.reset()
+
 		ui.clear()
 		MENU = false
-
-  	}, 2, 15, ui.xl-4, 4, true )
+  	}, 2, 12, ui.xl-4, 4, true )
 }
 
 function titleBar(){
@@ -183,8 +183,34 @@ function menuButton(){
 
   	ui.clear()
 	MENU = !MENU
+	if( !MENU ) vehicle.display()
   	}, ui.xl-10, 2, 8, 2, true, false )
 
+}
+
+function displayResults(){
+
+	 ui.button('generate new stage', function(){
+  		MENU = false
+		ui.clear()
+		renderer.clear()
+  		ui.textbox('generating stage path...', 2, 9 )
+	    titleBar()
+		vehicle.reset()
+		vehicle.disconnect()
+  		editor.reset()
+  		editor.connect()
+  		LOAD = 0
+
+  	}, 2, 15, ui.xl-4, 4)
+
+  	ui.button('restart stage', function(){
+  		MENU = false
+		vehicle.reset()
+
+		ui.clear()
+		MENU = false
+  	}, 2, 21, ui.xl-4, 4, true )
 }
 
 function main(){
@@ -192,14 +218,16 @@ function main(){
 	FPS = Math.round( 1000 / ( performance.now()-TIME ) )
 	TIME = performance.now()
 
-  	menuButton()
-
-  	if( MENU ){
-		pauseMenu()
-  	}
+	if( vehicle.END && vehicle.OBJECTIVE == 0 ){
+		displayResults()
+	}
   	else if( MOBILE && !MENU ){
   		ui.dpad()
   	}
+  	else if( MENU ){
+		pauseMenu()
+  	}
+
 
 	vehicle.update()
 
@@ -208,10 +236,9 @@ function main(){
 	const fps = 'fps ' + FPS
   	ui.textbox(fps,  2, ui.yl-3 )
   	
-  	if( vehicle.START ){
   	ui.textbox( vehicle.TEXTTIME, 2, 3 )
   	ui.textbox( 'vel' + ' ' + vehicle.VELOCITY, 2, ui.yl-5 )
-  	}
+
   	menuButton()
 
 	if( LOAD == 0 ){
