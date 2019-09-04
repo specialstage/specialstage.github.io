@@ -323,8 +323,9 @@ this.reset = function(){
 	scope.DOWN = false
 	scope.LEFT = false
 	scope.RIGHT = false
+
 	this.START = false
-	this.END = false
+	this.END   = false
 
 	scope.position.copy(scope.start)
 	scope.last.copy(scope.position)
@@ -339,7 +340,7 @@ this.reset = function(){
 	startTime = performance.now()
 	this.TEXTTIME = '0.00'
 	ui.clear()
-
+	control.clear()
 	editor.resetCheckpoints()
 
 	TIMEOUT = 0

@@ -100,6 +100,13 @@ function Control(){
 
   this.clear = function(){
   	scope.touches = []
+
+	  this.UP     = false
+	  this.DOWN   = false
+	  this.LEFT   = false
+	  this.RIGHT  = false
+	  this.ENTER  = false
+  
   }
 
   this.touchstart = function( event ){
