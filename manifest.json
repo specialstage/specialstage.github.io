@@ -1,6 +1,6 @@
 {
-  "short_name": "specialstage",
-  "name": "Special Stage",
+  "short_name": "Special Stage",
+  "name": "スペシャルステージ",
   "icons": [
     {
       "src": "/icons/stage_icon_192.png",
@@ -15,7 +15,7 @@
   ],
   "start_url": ".",
   "background_color": "#101010",
-  "display": "standalone",
+  "display": "fullscreen",
   "theme_color": "#101010",
   "orientation": "portrait",
   "scope": "."

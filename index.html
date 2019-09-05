@@ -4,19 +4,24 @@
 <head>
   <meta charset="UTF-8">
   <title>Special Stage</title>
-  <meta name="viewport" content="width=device-width, user-scalable=no" />
-  <meta name="theme-color" content="#000">
+  <link rel="canonical" href="https://specialstage.github.io/" />
   <link rel="icon" type="image/png" href="icons/stage_icon_512.png">
   <link rel="manifest" href="/manifest.json">
-
   <link rel="stylesheet" href="css/style.css"/>
+
+  <meta name="viewport" content="width=device-width, user-scalable=no" />
+  <meta name="theme-color" content="#000">
+
 </head>
 
 <body>
-  
+<script>
+  if (navigator.serviceWorker) {
+    navigator.serviceWorker.register('/library/serviceworker.js', {scope: '/'})
+  }
+</script>  
 <script src="js/library/three.min.js"></script>
 <script src="js/library/noise.min.js"></script>
-
 <script src="js/editor.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/vehicle.js"></script>
