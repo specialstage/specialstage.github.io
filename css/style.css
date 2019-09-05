@@ -5,6 +5,7 @@ body{
   image-rendering: pixelated;
   font-family: 'Roboto Mono' monospace;
   font-size: 11px;
+  background: #101010
 }
 
 #ui{
