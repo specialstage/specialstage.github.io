@@ -1,5 +1,5 @@
 {
-  "short_name": "Special_Stage",
+  "short_name": "specialstage",
   "name": "Special Stage",
   "icons": [
     {
@@ -16,7 +16,7 @@
   "start_url": ".",
   "background_color": "#101010",
   "display": "standalone",
-  "theme_color": "#101010"
-  "orientation": "portrait"
+  "theme_color": "#101010",
+  "orientation": "portrait",
   "scope": "."
 }
