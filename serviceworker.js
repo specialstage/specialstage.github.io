@@ -30,7 +30,7 @@ self.addEventListener('fetch', function (e) {
 self.addEventListener('install', function (e) {
   e.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-//       console.log('installing cache : ' + CACHE_NAME)
+      console.log('installing cache : ' + CACHE_NAME)
       return cache.addAll(URLS)
     })
   )
@@ -50,7 +50,7 @@ self.addEventListener('activate', function (e) {
 
       return Promise.all(keyList.map(function (key, i) {
         if (cacheWhitelist.indexOf(key) === -1) {
-//           console.log('deleting cache : ' + keyList[i] )
+          console.log('deleting cache : ' + keyList[i] )
           return caches.delete(keyList[i])
         }
       }))
