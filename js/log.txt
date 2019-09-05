@@ -1,3 +1,39 @@
+-
+
+September 5, 2019
+
+PWA Preperations
+
+		
+-
+
+September 4 2019
+
+Checkpoint & Objective updates
+
+	Added a simple time hueristic for generating intial stage times.	
+	Continued reworking floating point text formatting.
+	Changed Actual Time measurement from MS to S to avoid rounding errors.
+	Added Results template
+-
+
+September 2 2019
+
+	Fixed floating point text formating and ranked time display.
+	Added KM/H velocity ui output
+
+-
+
+August 29 2019
+
+	Checkpoint system and vehicle timer implemented.
+
+	Best time metrics implemented.
+
+	Method for creating formatted numerical strings implmeneted.
+
+-
+
 Planned
 
 	S T A G E U P D A T E
@@ -62,34 +98,3 @@ Planned
 		Redeuce redraw updates
 
 	Stage Editor
-		
--
-
-September 4 2019
-
-Checkpoint & Objective updates
-
-	Added a simple time hueristic for generating intial stage times.	
-	Continued reworking floating point text formatting.
-	Changed Actual Time measurement from MS to S to avoid rounding errors.
-	Added Results template
--
-
-September 2 2019
-
-	Fixed floating point text formating and ranked time display.
-	Added KM/H velocity ui output
-
--
-
-August 29 2019
-
-	Checkpoint system and vehicle timer implemented.
-
-	Best time metrics implemented.
-
-	Method for creating formatted numerical strings implmeneted.
-
--
-
-Previously

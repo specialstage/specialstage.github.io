@@ -57,6 +57,13 @@ function Editor() {
     side: THREE.DoubleSide
   })
 
+  const FILL_MATERIAL = new THREE.MeshBasicMaterial({
+  	color: BG,
+  	side: THREE.DoubleSide,
+  	transparent: true,
+  	opacity: 0.5
+  })
+
   const cursorGeometry = new THREE.Geometry()
 
   cursorGeometry.vertices[0] = LANE_A.clone()
@@ -87,6 +94,8 @@ function Editor() {
   const terrainGeometry = new THREE.Geometry()
   this.terrain = new THREE.Mesh(terrainGeometry, GRASS_MATERIAL)
   this.terrain.name = 'Terrain'
+
+  this.terrainFill = new THREE.Mesh( terrainGeometry, FILL_MATERIAL )
   let lights = new THREE.HemisphereLight(0x3cffe4, 0xffffff)
   lights.name = 'Lights'
 
@@ -180,18 +189,22 @@ function Editor() {
 
     scene.remove(this.segments)
     this.segments.geometry.dispose()
-    this.segments.geometry.copy( new THREE.Geometry )
+    this.segments.geometry.copy( new THREE.Geometry() )
     scene.add(this.segments)
 
     scene.remove(this.surface)
-    this.surface.geometry.copy( new THREE.Geometry )
     this.surface.geometry.dispose()
+    this.surface.geometry.copy( new THREE.Geometry() )
     scene.add(this.surface)
 
     scene.remove(this.terrain)
-    this.terrain.geometry.copy( new THREE.Geometry )
     this.terrain.geometry.dispose()
+    this.terrain.geometry.copy( new THREE.Geometry() )
 
+    scene.remove(this.terrainFill)
+    this.terrainFill.geometry.dispose()
+    this.terrainFill.geometry.copy( new THREE.Geometry() )
+	
     this.removeCheckpoints()
 
   }
@@ -209,8 +222,8 @@ function Editor() {
  	let slope = 0
  	let max_turn
 
- 	let trackLength = Math.random()*500+300
-//  	trackLength = 120
+//  	let trackLength = Math.random()*500+300
+ 	trackLength = 60
 
  	while( step < 40 ){
       scope.update()
@@ -530,8 +543,11 @@ function Editor() {
 	geometry.mergeVertices()
 
 	this.terrain.geometry.copy( geometry )
+	this.terrainFill.geometry.copy( geometry )
+	this.terrainFill.position.z -= 0.1
 
 	scene.add( this.terrain )
+	scene.add( this.terrainFill )
 
   }
 

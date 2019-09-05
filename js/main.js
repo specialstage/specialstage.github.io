@@ -129,10 +129,12 @@ function load(){
 
 function mainMenu(){
 
-  ui.textbox('keybinds', 2, ui.yl-26)
-  ui.textbox('activate touch      touch', 2, ui.yl-22)
-  ui.textbox('control vehicle     arrow keys', 2, ui.yl-18)
-  ui.textbox('reset stage         r', 2, ui.yl-16)
+
+  ui.textbox('controls', 2, ui.yl-24)
+
+  ui.textbox('activate touch controls    touch device', 2, ui.yl-20)
+  ui.textbox('control vehicle            arrow keys', 2, ui.yl-18)
+  ui.textbox('reset stage                r', 2, ui.yl-16)
 
   ui.button('start', function(){
 

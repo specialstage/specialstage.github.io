@@ -109,6 +109,7 @@ function UI(){
     }
     }
     
+    vehicle.display()
   }
   
   this.clear = function(){
