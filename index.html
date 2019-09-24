@@ -16,9 +16,11 @@
 
 <body>
 <script>
-  if (navigator.serviceWorker) {
-    navigator.serviceWorker.register('serviceworker.js', {scope: '/'})
-  }
+
+if (navigator.serviceWorker) {
+navigator.serviceWorker.register('serviceworker.js', {scope: '/'})
+}
+
 </script>  
 <script src="js/library/three.min.js"></script>
 <script src="js/library/noise.min.js"></script>
@@ -26,6 +28,8 @@
 <script src="js/ui.js"></script>
 <script src="js/vehicle.js"></script>
 <script src="js/control.js"></script>
+<script src="js/generate.js"></script>
+<script src="js/stage.js"></script>
 <script src="js/main.js"></script>
 
 <!-- Global site tag (gtag.js) - Google Analytics -->
