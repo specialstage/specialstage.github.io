@@ -37,7 +37,6 @@ let MOBILE = false
 
 function init(){
 
-	document.body.style.opacity = 1
 	window.addEventListener('touchstart', activateTouch )
 
 	let bg = new THREE.Color(BG)
