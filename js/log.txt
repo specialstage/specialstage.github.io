@@ -1,9 +1,63 @@
+September 22, 2019
+
+	Significant terrain generation improvements
+	Added background mesh
+	
+
+-
+September 18, 2019
+
+	Testing Buffer overlap detection instead of predective detection
+	Saved 0.0.085 to continue experiements on intersection testing
+	Added terrain to collision mesh
+
+September 19, 2019
+
+Terrain Generation
+
+	Reworked terrain triangulation
+	Edge decimation working nicely
+	Implemented face overlap detection
+	Saved build 0.0.08
+
+September 17, 2019
+
+Path Generation
+
+	Path no longer intersects
+	Fix is required for paths that end up in a 'trapped' state
+	Loading process has been refactored
+	Path generation appears stable
+	Saved build 0.0.07
+
+September 12, 2019
+
+Stage refactor preperations
+
+	Saved build 0.0.06
+
+September 10, 2019
+
+Switching back to Factory Functions due to scope and private variable issues
+
+	Setting up background loading processes system ( setInterval )
+-
+
+September 9, 2019
+
+Stage refactor preperations
+
+	Switching to ES6 classes
+
 -
 
 September 5, 2019
 
-PWA Preperations
+PWA preperations
 
+	App can now be installed to homescreen
+	Service worker set up - currently force updates cache
+	Updated icon
 		
 -
 
@@ -36,16 +90,15 @@ August 29 2019
 
 Planned
 
-	S T A G E U P D A T E
-
 	Path
 
+		Generate non intersecting path [ WORKING ]
 		Weighted path feature control
 
 			Minmax percentage basedr controls
 			Biomes
 
-		Depth first search
+		Depth first search [ WORKING ]
 		Repeat turn conditions
 		Shifting turn conditions
 		Uphill conditions
@@ -55,9 +108,10 @@ Planned
 
 		Terrain Generation
 
-			Improve data structure
+			Improve topology [ ONGOING ]
+			Improve noise
 			Fill holes
-			Fix extrusion vector averaging
+			Fix extrusion vector averaging [ WORKING ]
 			Generate collision mesh
 			Compute vertex normals
 			Coloring

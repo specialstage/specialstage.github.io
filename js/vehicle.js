@@ -36,12 +36,15 @@ var surface, boundry
 var objective = 0
 var timer = 0
 var startTime = 0
+let YEN = 0
+let REWARD = 0
 
 let AT = 0
 let DT = 0
 let CT = []
 let DELTA = []
 let SAMPLE = 0
+let CONTACT = false
 
 this.START = false
 this.END = false
@@ -56,12 +59,14 @@ this.RIGHT
 
 this.connect = function( _position, input ){
 
+	scene.fog = new THREE.FogExp2( palette[3], 0.01 )
+
 	camera.zoom = 1
-	camera.fov  = 90
 	camera.updateProjectionMatrix()
 
 	this.position.copy(_position)
-	this.position.z += 1
+
+	this.position.z += 2
 	this.start = new THREE.Vector3().copy(this.position)
 	this.last = new THREE.Vector3().copy(this.position)
 
@@ -78,7 +83,7 @@ this.connect = function( _position, input ){
 	this.angle    = 0
 	this.radian   = 0.01
 
-	this.force      = 0.012
+	this.force      = 0.015
 	this.angleGrip  = 0.9
 	this.grip       = 0.983
 	this.brake      = 0.95
@@ -97,7 +102,7 @@ this.connect = function( _position, input ){
 
 	particles = new THREE.Geometry()
 	pMaterial = new THREE.PointsMaterial({
-	size: 0.05,
+	size: 0.1,
 	vertexColors: THREE.VertexColors,
 	blending: THREE.AdditiveBlending,
 	transparent: true
@@ -115,6 +120,8 @@ this.connect = function( _position, input ){
 	particles.colors.push(color)
 	}
 
+	particles.verticesNeedUpdate = true
+
 	this.emitter = new THREE.Points(
 	particles,
 	pMaterial);
@@ -125,30 +132,32 @@ this.connect = function( _position, input ){
 
 	surface = new THREE.Mesh(
 	input.geometry.clone(),
-	new THREE.MeshBasicMaterial({side: THREE.DoubleSide}))
+	new THREE.MeshBasicMaterial({side: THREE.BackSide}))
 
-	surface.name = 'surface'
+	surface.name = 'Surface'
 	surface.geometry.mergeVertices()
 	surface.geometry.verticesNeedUpdate = true
 	surface.geometry.elementsNeedUpdate = true
 	surface.geometry.computeFaceNormals()
 
-	this.checkpoint = editor.checkpoint
+	this.checkpoint = stage.checkpoint
 
+	this.mesh.rotateOnAxis( this.up, Math.PI*2)
+	this.rig( this.up )
+}
+
+this.disconnect = function(){
+
+	surface.geometry.dispose()
+	scene.remove(this.mesh)
+	scene.remove(this.emitter)
+	scene.fog = new THREE.FogExp2( palette[3], 0 )
+	camera.updateProjectionMatrix()
 	for( let i = 0; i < 4; i++ ){
 
 		this.best[i] = 0
 
 	}
-}
-
-this.disconnect = function(){
-
-	surface.remove()
-	scene.remove(this.mesh)
-	scene.remove(this.emitter)
-	this.mesh.remove()
-
 }
 
 this.update = function(){
@@ -163,7 +172,7 @@ this.update = function(){
 	this.acc.multiplyScalar( DT )
 	this.vel.multiplyScalar( DT )
 
-	if( this.UP ){
+	if( this.UP && CONTACT ){
 	this.vel.add(this.acc)
 
 	// Create Vehicle Start Function to intiate update loop
@@ -179,7 +188,8 @@ this.update = function(){
 
 	}
 
-	this.vel.multiplyScalar(this.grip)
+	let grip = ( CONTACT ) ? this.grip : 0.999
+	this.vel.multiplyScalar( grip )
 
 	this.position.add(this.vel)
 	this.mesh.position.copy(this.position)
@@ -189,12 +199,13 @@ this.update = function(){
 	this.last.copy(this.position)
 	this.mesh.updateMatrixWorld()
 
-	this.dir = this.mesh.up.clone()
+	this.dir.copy( this.mesh.up )
 	this.dir.applyMatrix4( this.mesh.matrixWorld )
 	this.dir.sub(this.position)
+	this.dir.normalize()
 
-	if( this.LEFT )  this.angle -= this.radian * DT
-	if( this.RIGHT ) this.angle += this.radian * DT
+	if( this.LEFT )  this.angle += this.radian * DT
+	if( this.RIGHT ) this.angle -= this.radian * DT
 
 	this.angle *= DT
 	this.angle *= (this.angleGrip)
@@ -236,23 +247,28 @@ this.detect = function(){
 
 	let intersects = []
 
-	this.ray.set( 0,0,1 )
-	this.ray.normalize()
+	this.ray.set( 0, 0, 1 )
+// 	this.ray.normalize()
 	this.raycaster.far = -this.vel.z + 1
-	surface.raycast( this.raycaster, intersects )
+
+	stage.surface.raycast( this.raycaster, intersects )
 
 	if( intersects.length > 0 ){
 
+		  CONTACT = true
 		  this.position.copy(intersects[0].point)
 		  normal.copy(intersects[0].face.normal)
 		  TIMEOUT = 0
 
 	}
 	else if( intersects.length === 0 ){
-
+		if( CONTACT ){
+			this.vel.z += this.vel.length()/3
+		}
+		CONTACT = false
 		this.vel.add(gravity);
 		TIMEOUT ++
-		if( TIMEOUT === 60 ){
+		if( TIMEOUT === 180 ){
 			ui.clear()
 			control.clear()
 			MENU = true
@@ -268,12 +284,12 @@ this.detect = function(){
 	this.raycaster.far = this.ray.length()
 	this.ray.normalize()
 
-	this.checkpoint[objective].raycast( this.raycaster, intersects )
+	stage.generate.checkpoints[objective].collision.raycast( this.raycaster, intersects )
 	this.check = false
 
 	if( intersects.length > 0 ){
 
-		editor.checkpointDisplay[objective].material.color.setHex(0x1fff7f)
+		stage.generate.checkpoints[objective].display.material.color.setHex(0x1fff7f)
 		
 		if( objective > 0 ){
 
@@ -286,14 +302,11 @@ this.detect = function(){
 
 	  if( objective == 4 ){
 
+		if( AT < stage.best[3]  ) REWARD = Math.round( ( stage.best[3]-AT ) *10 )
+		YEN += REWARD
+
 		objective = 0
 		this.END = true
-
-		if( AT < editor.best[3]  ){
-
-		for( let i = 0; i < editor.best.length; i++)
-		  editor.best[i] = CT[i]
-		}
 
 	  }
 	  else{
@@ -305,9 +318,12 @@ this.detect = function(){
 
 }
 
-this.getAT = function(){
+this.getYen = function(){
+	return YEN
+}
+this.getReward = function(){
 
-	return AT
+	return REWARD
 
 }
 
@@ -318,6 +334,14 @@ this.getObjective = function(){
 }
 
 this.reset = function(){
+
+	stage.generate.resetCheckpoints()
+
+	if( this.END && CT.length === 4 && AT < stage.best[3]  ){
+
+	for( let i = 0; i < stage.best.length; i++)
+	  stage.best[i] = CT[i]
+	}
 
 	scope.UP = false
 	scope.DOWN = false
@@ -341,27 +365,36 @@ this.reset = function(){
 	this.TEXTTIME = '0.00'
 	ui.clear()
 	control.clear()
-	editor.resetCheckpoints()
+
+	REWARD = 0
 
 	TIMEOUT = 0
-	CT.length = 0
+	CT = []
 	AT = 0
 	MENU = false
+
+
 }
 
 this.rig = function(up){
 
 	const cameraTarget = this.dir.clone()
-	cameraTarget.multiplyScalar(-10)
+	cameraTarget.multiplyScalar(-30)
 	
 	cameraTarget.add( this.position )
-	cameraTarget.z += 6
+	cameraTarget.z += 15
 
+	let lerp = ( CONTACT ) ? 0.25 : 0.25
+	
 	if( !this.END ){
-	camera.position.lerp( cameraTarget, 0.5)
+	camera.position.lerp( cameraTarget, lerp)
 	}
 	camera.lookAt(this.position)
 
+}
+
+this.getCT = function(){
+	console.log( CT )
 }
 
 this.emit = function(){
@@ -437,8 +470,9 @@ this.display = function(){
 
 		ui.textbox( text , 2, 6+i*2 )
 
-		let rank = ui.getTextFloat( ( editor.best[i]-CT[i] ), true )
+		let rank = ui.getTextFloat( ( stage.best[i]-CT[i] ), true )
 		ui.textbox( rank, Math.floor(ui.xl-2-16+(16-rank.length)), 6+i*2 )
+
 	}
 
 }
