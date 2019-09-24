@@ -1,13 +1,18 @@
 body{
   overflow: hidden;
+  height: 100%;
   margin: 0;
   padding: 0;
   image-rendering: pixelated;
   font-family: 'Roboto Mono' monospace;
   font-size: 11px;
-  background: #101010
+  background: #1f1f1f;
+  opacity: 0;
 }
-
+body{
+/* 	opacity: 1; */
+	transition: opacity 2s;
+}
 #ui{
   image-rendering: pixelated;
   z-index: 99;
