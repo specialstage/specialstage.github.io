@@ -99,7 +99,7 @@ function Generate(){
 	const angle_step = Math.PI/32
 
 	let position = 0
-	let length = 100
+	let length = 666
 	let section = 0
 	let section_angle = 0
 	let section_slope = 0
