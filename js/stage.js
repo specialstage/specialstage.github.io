@@ -28,7 +28,7 @@ function Stage() {
 	this.connect = function(){
 		
 		ui.clear()
-		camera.position.set(0,0,1200)
+		camera.position.set(0,0,1600)
 		camera.lookAt( new THREE.Vector3() )
 		renderer.render( scene, camera )
 		this.generate.connect()

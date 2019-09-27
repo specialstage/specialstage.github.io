@@ -29,6 +29,8 @@ let DT = 0
 let FPS = 0
 let COUNTER = 0
 let TIMEOUTS = 0
+let DNF = false
+let REASON = 'dnf'
 
 let MODE = 0
 let LOAD = 0
@@ -129,23 +131,33 @@ function menu(){
 
 	renderer.render( scene, camera )
 
+	console.log('START SCREEN')
+
 }
 
 function pause(){
 
-  	ui.button('generate new stage', function(){
-  		MENU = false
-		ui.clear()
-		renderer.clear()
-	    title()
-	    vehicle.reset()
-	    vehicle.disconnect()
+	let ln = vehicle.getCT().length*2+4
 
-		renderer.render( scene, camera )
-  		stage.reset()
+	if( DNF ){
+		ui.textbox('dnf', 2, ln+=4)
+		ui.textbox('reason - ' + REASON, 2, ln +=2)
+		ui.textbox('repair cost - 100 yen', 2, ln +=2)
 
-		PLAY = false
-  	}, 2, 6, ui.xl-4, 4, true)
+	}
+//   	ui.button('generate new stage', function(){
+//   		MENU = false
+// 		ui.clear()
+// 		renderer.clear()
+// 	    title()
+// 	    vehicle.reset()
+// 	    vehicle.disconnect()
+
+// 		renderer.render( scene, camera )
+//   		stage.reset()
+
+// 		PLAY = false
+//   	}, 2, ln+=3, ui.xl-4, 4, true)
 
 	if( MENU ){
   	ui.button('restart stage', function(){
@@ -153,7 +165,7 @@ function pause(){
 		vehicle.reset()
 		ui.clear()
 		MENU = false
-  	}, 2, 12, ui.xl-4, 4, true )
+  	}, 2, ln+=4, ui.xl-4, 6, true )
 	}
 }
 
@@ -174,7 +186,8 @@ function menuButton(){
 }
 
 function results(){
-
+	ui.clear()
+	ui.textbox( vehicle.TEXTTIME, 2, 3 )
 	vehicle.display()
 	ui.textbox( '-', 2, 15 )
 	let ln = 15
@@ -195,7 +208,7 @@ function results(){
 	    vehicle.disconnect()
 	    vehicle.reset()
 		stage.reset()
-  	}, 2, ln += 5, ui.xl-4, 4, true)
+  	}, 2, ln += 4, ui.xl-4, 6, true)
 
 	if( PLAY ){
 
@@ -204,7 +217,7 @@ function results(){
 		vehicle.reset()
 
 		ui.clear()
-  	}, 2, ln+=6, ui.xl-4, 4, true )
+  	}, 2, ln+=9, ui.xl-4, 6, true )
 
 	}
 
@@ -220,16 +233,6 @@ function main(){
 	TIME = time
 	FPS = Math.round( 100/FPS )*10
 
-	if( vehicle.END && vehicle.OBJECTIVE == 0 ){
-		results()
-	}
-  	else if( MOBILE && !MENU ){
-  		ui.dpad()
-  	}
-  	else if( MENU ){
-		pause()
-  	}
-
   	if( PLAY ){
 
   		menuButton()
@@ -237,7 +240,17 @@ function main(){
 		vehicle.display()
   		ui.textbox( vehicle.TEXTTIME, 2, 3 )
 		ui.textbox( 'fps ' + FPS, 2, ui.yl-4)
-  		if( !vehicle.END ) ui.textbox( 'vel' + ' ' + vehicle.VELOCITY, 2, ui.yl-6 )
+  		ui.textbox( 'vel' + ' ' + vehicle.VELOCITY, 2, ui.yl-6 )
+
+		if( vehicle.END && vehicle.OBJECTIVE == 0 ){
+			results()
+		}
+		else if( MOBILE && !MENU ){
+			ui.dpad()
+		}
+		else if( MENU ){
+			pause()
+		}
 
   	}
   	else if( stage.generate.END === true ){

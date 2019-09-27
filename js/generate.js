@@ -28,7 +28,7 @@ function Generate(){
 
 	const perimeter = new THREE.LineSegments( new THREE.Geometry() )
 	perimeter.name = 'Generative Perimeter'
-	perimeter.material.color = new THREE.Color( palette[0] )
+	perimeter.material.color = new THREE.Color( 0xffffff )
 	perimeter.material.name  = 'Perimeter Material'
 
 	const segments  = new THREE.LineSegments( new THREE.Geometry() )
@@ -99,7 +99,7 @@ function Generate(){
 	const angle_step = Math.PI/32
 
 	let position = 0
-	let length = 666
+	let length = 100
 	let section = 0
 	let section_angle = 0
 	let section_slope = 0
@@ -153,7 +153,7 @@ function Generate(){
 
 		ui.clear()
 		ui.textbox('generating stage please wait...', 2, 3)
-		if( !MOBILE ) ui.textbox( 'keyboard controls - arrow keys', ui.yl-4, 7)
+		if( !MOBILE ) ui.textbox('keyboard controls - arrow keys', 2, ui.yl-4 )
 		loadtime = window.performance.now()
 		interval = window.setInterval( this.generate, 16 )
 
@@ -283,7 +283,6 @@ function Generate(){
 		angle_sum = 0
 
 		position = 0
-		length = 100
 		section = 0
 		section_angle = 0
 		section_slope = 0

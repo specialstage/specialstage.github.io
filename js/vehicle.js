@@ -213,7 +213,7 @@ this.update = function(){
 
 	this.acc.copy(this.dir).multiplyScalar( this.force )
 
-	if( this.DOWN ) this.vel.multiplyScalar(this.brake)
+	if( this.DOWN && CONTACT ) this.vel.multiplyScalar(this.brake)
 
 	target.copy( normal )
 	lookAt.lerp(target, 0.2)
@@ -264,7 +264,9 @@ this.detect = function(){
 	else if( intersects.length === 0 ){
 		if( CONTACT ){
 			this.vel.z += this.vel.length()/3
+			CONTACT = false
 		}
+		else{
 		CONTACT = false
 		this.vel.add(gravity);
 		TIMEOUT ++
@@ -273,6 +275,10 @@ this.detect = function(){
 			control.clear()
 			MENU = true
 			this.END = true
+			DNF = true
+			REASON = 'out of bounds'
+			YEN -= 100
+		}
 		}
 
 	}
@@ -335,6 +341,7 @@ this.getObjective = function(){
 
 this.reset = function(){
 
+	DNF = false
 	stage.generate.resetCheckpoints()
 
 	if( this.END && CT.length === 4 && AT < stage.best[3]  ){
@@ -394,7 +401,7 @@ this.rig = function(up){
 }
 
 this.getCT = function(){
-	console.log( CT )
+	return CT
 }
 
 this.emit = function(){

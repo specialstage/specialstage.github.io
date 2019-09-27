@@ -1,8 +1,14 @@
+September 26, 2019
+
+	Fixed ui bugs
+	Added DNF messages
+	Added pop parameter / improved vehicle jumping
+
 September 22, 2019
 
 	Significant terrain generation improvements
 	Added background mesh
-	
+	Added currency
 
 -
 September 18, 2019
