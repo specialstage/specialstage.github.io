@@ -90,6 +90,12 @@ function UI(){
     lookup['z'] = { x: 25 * size, y: shift }
     lookup[' '] = { x: 26 * size, y: 48 }
     
+    lookup['U'] = { x: 0 * size, y: 24 }
+    lookup['D'] = { x: 1 * size, y: 24 }
+    lookup['L'] = { x: 2 * size, y: 24 }
+    lookup['R'] = { x: 3 * size, y: 24 }
+    lookup['Y'] = { x: 0 * size, y: 16 }
+
     window.addEventListener( 'mouseup'  , scope.mouseup )
     window.addEventListener( 'touchstart' , scope.touchsetup )
 
@@ -235,10 +241,10 @@ function UI(){
 
   	let xl = Math.floor(scope.xl/4)
 
-    this.button('l', function(){ control.LEFT = true  }, 1, scope.yl-24, xl-1,  8 )
-    this.button('r', function(){ control.RIGHT = true }, xl+1, scope.yl-24, xl-1, 8 )
-    this.button('u', function(){ control.UP = true    }, scope.xl-xl*2, scope.yl-24, xl*2-1, 8 )
-    this.button('d', function(){ control.DOWN = true  }, scope.xl-xl*2, scope.yl-14, xl*2-1, 8 )
+    this.button('L', function(){ control.LEFT = true  }, 1, scope.yl-24, xl-1,  8 )
+    this.button('R', function(){ control.RIGHT = true }, xl+1, scope.yl-24, xl-1, 8 )
+    this.button('U', function(){ control.UP = true    }, scope.xl-xl*2, scope.yl-24, xl*2-1, 8 )
+    this.button('D', function(){ control.DOWN = true  }, scope.xl-xl*2, scope.yl-14, xl*2-1, 8 )
     
   }
 

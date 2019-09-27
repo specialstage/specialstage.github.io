@@ -131,8 +131,6 @@ function menu(){
 
 	renderer.render( scene, camera )
 
-	console.log('START SCREEN')
-
 }
 
 function pause(){
@@ -141,8 +139,8 @@ function pause(){
 
 	if( DNF ){
 		ui.textbox('dnf', 2, ln+=4)
-		ui.textbox('reason - ' + REASON, 2, ln +=2)
-		ui.textbox('repair cost - 100 yen', 2, ln +=2)
+		ui.textbox('reason        ' + REASON, 2, ln +=2)
+		ui.textbox('repair cost   100Y', 2, ln +=2)
 
 	}
 //   	ui.button('generate new stage', function(){
@@ -194,10 +192,10 @@ function results(){
 	if( vehicle.getReward() > 0 ){
 	ui.textbox('new record', 2, ln+=2 )
 	ln+=2
-	ui.textbox( 'reward ' + vehicle.getReward(), 2, ln+=2 )
+	ui.textbox( 'reward    ' + vehicle.getReward() + 'Y', 2, ln+=2 )
 	}
 
-	ui.textbox( 'total yen ' + vehicle.getYen(), 2, ln+=2 )
+	ui.textbox( 'total     ' + vehicle.getYen() + 'Y', 2, ln+=2 )
 
 	 ui.button('next stage', function(){
   		MENU = false
