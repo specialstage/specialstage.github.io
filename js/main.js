@@ -4,12 +4,16 @@ window.focus = resize
 
 	let palette = [
 
-		0xc4cfa1,
-		0x8b956d,
-		0x4d533c,
-		0x1f1f1f,
-		0xff33ff,
-		0xff0000
+	0x101010,
+	0xffffff,
+	0xc1c1c1,
+	0x2c2c2c,
+	0x00ff43,
+	0xff2a2a,
+	0x2486ff,
+	0xff295a,
+	0x758660,
+	0x27c12c
 
 	]
 	
@@ -20,7 +24,7 @@ let scene, camera, renderer, stage, vehicle, control, ui
 let UP
 let PLAY    = false
 let IMPORT  = false
-let BG 	    = palette[3]
+let BG 	    = palette[0]
 let FRAME	= 0
 
 let TIME = 0

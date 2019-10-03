@@ -59,7 +59,7 @@ this.RIGHT
 
 this.connect = function( _position, input ){
 
-	scene.fog = new THREE.FogExp2( palette[3], 0.01 )
+	scene.fog = new THREE.FogExp2( palette[0], 0.01 )
 
 	camera.zoom = 1
 	camera.updateProjectionMatrix()
@@ -85,7 +85,7 @@ this.connect = function( _position, input ){
 
 	this.force      = 0.015
 	this.angleGrip  = 0.9
-	this.grip       = 0.983
+	this.grip       = 0.98
 	this.brake      = 0.95
 
 	this.mesh = new THREE.LineSegments(
@@ -263,7 +263,7 @@ this.detect = function(){
 	}
 	else if( intersects.length === 0 ){
 		if( CONTACT ){
-			this.vel.z += this.vel.length()/3
+// 			this.vel.z += this.vel.length()/3
 			CONTACT = false
 		}
 		else{
@@ -295,7 +295,7 @@ this.detect = function(){
 
 	if( intersects.length > 0 ){
 
-		stage.generate.checkpoints[objective].display.material.color.setHex(0x1fff7f)
+		stage.generate.checkpoints[objective].display.material.color.setHex( palette[4] )
 		
 		if( objective > 0 ){
 

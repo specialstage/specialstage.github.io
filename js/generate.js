@@ -13,7 +13,7 @@ function Generate(){
 	const nodes = new THREE.Line( new THREE.Geometry() )
 	nodes.name = 'Generative Nodes'
 	nodes.visible = false
-	nodes.material.color = new THREE.Color( palette[0] )
+	nodes.material.color = new THREE.Color( palette[4] )
 	nodes.material.name = 'Node Material'
 
 	const extruder = new THREE.Points( new THREE.Geometry() )
@@ -23,7 +23,7 @@ function Generate(){
 	const surface = new THREE.Mesh( new THREE.Geometry() )
 	surface.name = 'Generative Surface'
 	surface.visible = false
-	surface.material.color = new THREE.Color( palette[3] )
+	surface.material.color = new THREE.Color( palette[0] )
 	surface.material.name = 'Surface Material'
 
 	const perimeter = new THREE.LineSegments( new THREE.Geometry() )
@@ -34,7 +34,7 @@ function Generate(){
 	const segments  = new THREE.LineSegments( new THREE.Geometry() )
 	segments.name = 'Generative Segments'
 	segments.visible = true
-	segments.material.color = new THREE.Color( palette[1] )
+	segments.material.color = new THREE.Color( palette[3] )
 	segments.material.name = 'Segments Material'
 
 	const collision = new THREE.Mesh( new THREE.Geometry() )
@@ -46,15 +46,19 @@ function Generate(){
 
 	const terrain = new THREE.Mesh( new THREE.Geometry() )
 	terrain.name = 'Generative Terrain'
-	terrain.material.color = new THREE.Color( palette[2] )
+	terrain.material.color = new THREE.Color( palette[8] )
 	terrain.material.name = 'Terrain Material'
 	terrain.material.wireframe = true
 	terrain.material.side = THREE.DoubleSide
 	terrain.visible = true
 
+	const trees = new THREE.LineSegments( new THREE.Geometry() )
+	trees.name = 'Trees'
+	trees.material.color = new THREE.Color( palette[9] )
+
 	const background = new THREE.Mesh( new THREE.Geometry(), new THREE.MeshBasicMaterial() )
 	background.name = 'Generative Background'
-	background.material.color = new THREE.Color( palette[3] )
+	background.material.color = new THREE.Color( palette[0] )
 	background.material.name = 'Background Material'
 	background.material.wireframe = false
 	background.material.side = THREE.FrontSide
@@ -170,7 +174,8 @@ function Generate(){
 		scene.remove( surface )
 		scene.remove( terrain )
 		scene.remove( background )
-
+		scene.remove( trees )
+		
 		for( let i in scope.checkpoints ){
 
 			scene.remove( scope.checkpoints[i].display )
@@ -186,8 +191,8 @@ function Generate(){
 
 		scope.terrain()
 
-		terrain.geometry.computeFaceNormals()
-		terrain.geometry.computeVertexNormals()
+// 		terrain.geometry.computeFaceNormals()
+// 		terrain.geometry.computeVertexNormals()
 		collision.geometry.mergeVertices()
 		collision.geometry.verticesNeedUpdate = true
 		collision.geometry.elementsNeedUpdate = true
@@ -250,6 +255,7 @@ function Generate(){
 		perimeter.geometry.dispose()
 		terrain.geometry.dispose()
 		collision.geometry.dispose()
+		trees.geometry.dispose()
 
 		segmentsBuffer.dispose()
 		perimeterBuffer.dispose()
@@ -942,6 +948,7 @@ function Generate(){
 	terrain.geometry.verticesNeedUpdate = true
 	terrain.geometry.elementsNeedUpdate = true
 	terrain.geometry.computeFaceNormals()
+	terrain.geometry.computeVertexNormals()
 	terrain.geometry.mergeVertices()
 	terrain.geometry.computeBoundingSphere()
 	this.noise( terrain.geometry )
@@ -961,12 +968,75 @@ function Generate(){
 
 	}
 
+	this.trees()
+
 	}
 
 	this.trees = function(){
 
+		const flags = []
+
+		const faces = terrain.geometry.faces
+		for( let i = 0; i < faces.length; i++ ){
 		
-		
+			flags[ faces[i].a ] = ( Math.abs( faces[i].vertexNormals[0].z ) > 0.5 )
+			flags[ faces[i].b ] = ( Math.abs( faces[i].vertexNormals[1].z ) > 0.5 )
+			flags[ faces[i].c ] = ( Math.abs( faces[i].vertexNormals[2].z ) > 0.5 )
+
+		}
+
+		for( let i = 0; i < flags.length; i++ ){
+
+			for( let v = 0; v < segments.geometry.vertices.length; v++ ){
+
+				if( terrain.geometry.vertices[i].distanceTo( segments.geometry.vertices[v] ) < 0.1 ){
+					flags[i] = false
+				}
+			}
+			if( flags[i] && Math.random() > 0.9 ){
+				let a = terrain.geometry.vertices[ i ].clone()
+				let t = tree()
+
+				for( let k = 0; k < t.vertices.length; k++ ){
+
+					trees.geometry.vertices.push( t.vertices[k].add(a) )
+				}
+			}
+		}
+
+
+		scene.add( trees )
+
+		function tree( p ){
+
+		  var scale = 1
+		  var segments   = Math.floor(Math.random()*8)+6
+		  var branch = 6
+		  var angle = (Math.PI*2)/branch
+		  var weight = 0.3
+		  var base = 1
+
+		  var tree = new THREE.Geometry()
+
+		  tree.vertices.push(new THREE.Vector3(0,0,0))
+		  tree.vertices.push(new THREE.Vector3(0,0,segments*scale-scale/2+base))
+
+		  var up = new THREE.Vector3(0,0,1)
+
+		  for ( var s = 1; s < segments; s++ ){
+		  for ( var b = 0; b < branch; b++ ){
+
+			off = angle*((s%2)*0.5)
+
+			tree.vertices.push(new THREE.Vector3(0,0,s*scale+base))
+			tree.vertices.push(new THREE.Vector3((segments-s)*0.3,0,s*scale-weight+base))
+			tree.vertices[tree.vertices.length-1].applyAxisAngle(up, angle*b+off)
+
+		  }
+		  }
+
+		  return(tree)
+		}
 	}
 
 	this.checkpoint = function(){
@@ -1044,7 +1114,7 @@ function Generate(){
 			lines.vertices.push(vv2)
 			lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z+2.5) )
 
-			const material = new THREE.MeshBasicMaterial({ color: 0xf95544, side: THREE.DoubleSide, wireframe: false, fog: true })
+			const material = new THREE.MeshBasicMaterial({ color: palette[5], side: THREE.DoubleSide, wireframe: false, fog: true })
 			const mesh = new THREE.Mesh(geometry, material)
 			mesh.visible = false
 
@@ -1064,7 +1134,7 @@ function Generate(){
 	this.resetCheckpoints = function(){
 		
 		for( let i in scope.checkpoints ){
-			scope.checkpoints[i].display.material.color.setHex( 0xf95544 )
+			scope.checkpoints[i].display.material.color.setHex( palette[5] )
 		}
 
 	}

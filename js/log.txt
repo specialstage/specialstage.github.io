@@ -1,8 +1,15 @@
+October 03, 2019
+
+	Palette updates
+	Added Trees
+	Removed pop ( requires rework )
+
 September 26, 2019
 
 	Fixed ui bugs
 	Added DNF messages
 	Added pop parameter / improved vehicle jumping
+	Saved 0.0.085 ( im a mess )
 
 September 22, 2019
 
