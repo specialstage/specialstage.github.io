@@ -295,7 +295,7 @@ this.detect = function(){
 
 	if( intersects.length > 0 ){
 
-		stage.generate.checkpoints[objective].display.material.color.setHex( palette[4] )
+		stage.generate.checkpoints[objective].display.material.color = palette[4]
 		
 		if( objective > 0 ){
 

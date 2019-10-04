@@ -13,7 +13,7 @@ function Generate(){
 	const nodes = new THREE.Line( new THREE.Geometry() )
 	nodes.name = 'Generative Nodes'
 	nodes.visible = false
-	nodes.material.color = new THREE.Color( palette[4] )
+	nodes.material.color = palette[4]
 	nodes.material.name = 'Node Material'
 
 	const extruder = new THREE.Points( new THREE.Geometry() )
@@ -23,30 +23,30 @@ function Generate(){
 	const surface = new THREE.Mesh( new THREE.Geometry() )
 	surface.name = 'Generative Surface'
 	surface.visible = false
-	surface.material.color = new THREE.Color( palette[0] )
+	surface.material.color = palette[0]
 	surface.material.name = 'Surface Material'
 
 	const perimeter = new THREE.LineSegments( new THREE.Geometry() )
 	perimeter.name = 'Generative Perimeter'
-	perimeter.material.color = new THREE.Color( 0xffffff )
+	perimeter.material.color = palette[1]
 	perimeter.material.name  = 'Perimeter Material'
 
 	const segments  = new THREE.LineSegments( new THREE.Geometry() )
 	segments.name = 'Generative Segments'
 	segments.visible = true
-	segments.material.color = new THREE.Color( palette[3] )
+	segments.material.color = palette[3]
 	segments.material.name = 'Segments Material'
 
 	const collision = new THREE.Mesh( new THREE.Geometry() )
 	collision.name = 'Collision Mesh'
 	collision.visible = true
-	collision.material.color = new THREE.Color( palette[3] )
+	collision.material.color = palette[3]
 	collision.material.name = 'Collision Material'
 	collision.material.side = THREE.BackSide
 
-	const terrain = new THREE.Mesh( new THREE.Geometry() )
-	terrain.name = 'Generative Terrain'
-	terrain.material.color = new THREE.Color( palette[8] )
+	const terrain = new THREE.Mesh( new THREE.Geometry(),
+					new THREE.MeshBasicMaterial( {vertexColors: THREE.VertexColors} ) )
+	terrain.name = 'Terrain'
 	terrain.material.name = 'Terrain Material'
 	terrain.material.wireframe = true
 	terrain.material.side = THREE.DoubleSide
@@ -54,15 +54,15 @@ function Generate(){
 
 	const trees = new THREE.LineSegments( new THREE.Geometry() )
 	trees.name = 'Trees'
-	trees.material.color = new THREE.Color( palette[9] )
+	trees.material.color = palette[9]
 
 	const background = new THREE.Mesh( new THREE.Geometry(), new THREE.MeshBasicMaterial() )
 	background.name = 'Generative Background'
-	background.material.color = new THREE.Color( palette[0] )
+	background.material.color = palette[0]
 	background.material.name = 'Background Material'
 	background.material.wireframe = false
 	background.material.side = THREE.FrontSide
-	background.material.opacity = 0.5
+	background.material.opacity = 0.75
 	background.material.blending = 'Custom Blending'
 	background.material.blendMode = THREE.MultiplyBlending
 	background.material.transparent = true
@@ -104,6 +104,7 @@ function Generate(){
 
 	let position = 0
 	let length = 666
+	length = 100
 	let section = 0
 	let section_angle = 0
 	let section_slope = 0
@@ -976,35 +977,67 @@ function Generate(){
 
 		const flags = []
 
+		for( let i = 0; i < terrain.geometry.vertices.length; i++ ){
+			flags[i] = false
+		}
+
 		const faces = terrain.geometry.faces
 		for( let i = 0; i < faces.length; i++ ){
-		
-			flags[ faces[i].a ] = ( Math.abs( faces[i].vertexNormals[0].z ) > 0.5 )
-			flags[ faces[i].b ] = ( Math.abs( faces[i].vertexNormals[1].z ) > 0.5 )
-			flags[ faces[i].c ] = ( Math.abs( faces[i].vertexNormals[2].z ) > 0.5 )
+			
+			if( Math.abs( faces[i].vertexNormals[0].z ) > 0.9 ){
+				flags[ faces[i].a ] = true
+				faces[i].vertexColors[0] = palette[10]
+			}
+			else{
+				faces[i].vertexColors[0] = palette[10]
+			}
+			if( Math.abs( faces[i].vertexNormals[1].z ) > 0.9 ){
+				flags[ faces[i].b ] = true
+				faces[i].vertexColors[1] = palette[10]
+			}
+			else{
+				faces[i].vertexColors[1] = palette[10]
+			}
+			if( Math.abs( faces[i].vertexNormals[2].z ) > 0.9 ){
+				flags[ faces[i].c ] = true
+				faces[i].vertexColors[2] = palette[10]
+			}
+			else{
+				faces[i].vertexColors[2] = palette[10]
+			}
 
 		}
 
 		for( let i = 0; i < flags.length; i++ ){
 
+
 			for( let v = 0; v < segments.geometry.vertices.length; v++ ){
 
 				if( terrain.geometry.vertices[i].distanceTo( segments.geometry.vertices[v] ) < 0.1 ){
+
 					flags[i] = false
+
 				}
+
 			}
-			if( flags[i] && Math.random() > 0.9 ){
+
+
+			if( flags[i] && Math.random() < 0.15){
+
 				let a = terrain.geometry.vertices[ i ].clone()
 				let t = tree()
 
 				for( let k = 0; k < t.vertices.length; k++ ){
 
 					trees.geometry.vertices.push( t.vertices[k].add(a) )
+
 				}
+
 			}
+
 		}
 
-
+		terrain.geometry.colorsNeedUpdate = true
 		scene.add( trees )
 
 		function tree( p ){
@@ -1099,22 +1132,23 @@ function Generate(){
 			const lines = new THREE.Geometry()
 
 			lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z) )
-			lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z+3) )
-			lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z+3) )
+			lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z+4) )
+			lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z+4) )
 
-			const vv1 = new THREE.Vector3().copy(d).multiplyScalar(-0.5).add(v1)
-			vv1.z += 3
+			const vv1 = new THREE.Vector3().copy(d).multiplyScalar(-.666).add(v1)
+			vv1.z += 4
 			lines.vertices.push(vv1)
 
 			vv2 = vv1.clone()
-			vv2.z -= 0.5
+			vv2.z -= 1
 
 			lines.vertices.push(vv2)
 			lines.vertices.push(vv1)
 			lines.vertices.push(vv2)
-			lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z+2.5) )
+			lines.vertices.push( new THREE.Vector3(v1.x,v1.y,v1.z+3) )
 
-			const material = new THREE.MeshBasicMaterial({ color: palette[5], side: THREE.DoubleSide, wireframe: false, fog: true })
+			const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, wireframe: false, fog: true })
+			material.color = palette[5]
 			const mesh = new THREE.Mesh(geometry, material)
 			mesh.visible = false
 
@@ -1134,7 +1168,7 @@ function Generate(){
 	this.resetCheckpoints = function(){
 		
 		for( let i in scope.checkpoints ){
-			scope.checkpoints[i].display.material.color.setHex( palette[5] )
+			scope.checkpoints[i].display.material.color = palette[5]
 		}
 
 	}

@@ -1,21 +1,28 @@
 window.onload = init
 window.onresize = resize
+window.fullscreenchange = resize
 window.focus = resize
 
 	let palette = [
 
-	0x101010,
-	0xffffff,
-	0xc1c1c1,
-	0x2c2c2c,
-	0x00ff43,
-	0xff2a2a,
+	0x101010, // BLACK
+	0xffffff, // WHITE
+	0xc1c1c1, // MID LIGHT
+	0x2c2c2c, // MID DARK
+	0x50ffae, // ACCENT GREEN
+	0xff7272, // ACCENT RED
 	0x2486ff,
 	0xff295a,
-	0x758660,
-	0x27c12c
+	0x344234, // GRASS
+	0x219640, // EVERGREEN
+	0x6d6047, // SOIL
 
 	]
+
+	for( let i in palette ){
+		const c = new THREE.Color( palette[i] )
+		palette[i] = c
+	}
 	
 let LOADSTATUS = 0
 
@@ -35,7 +42,7 @@ let COUNTER = 0
 let TIMEOUTS = 0
 let DNF = false
 let REASON = 'dnf'
-
+let FULLSCREEN = false
 let MODE = 0
 let LOAD = 0
 let MENU = false
@@ -120,21 +127,48 @@ function resize(){
 function menu(){
 
 	const id = window.requestAnimationFrame( menu )
-
+	let START = false
 	title()
 
 	ui.button('start', function(){
-
+		START = true
 		ui.clear()
 		title()
 		stage.connect()
 		window.cancelAnimationFrame( id )
 		window.requestAnimationFrame( main )
 
-	}, 2, ui.yl-12, ui.xl-4, 6 )
+	}, 2, ui.yl-12, ui.xl-4, 6, true )
+
+	if( !START ){
+
+	fullscreen( ui.yl-20 )
+
+	}
 
 	renderer.render( scene, camera )
 
+}
+
+function fullscreen( y ){
+
+	if (document.body.requestFullscreen) {
+
+	let label = ( FULLSCREEN ) ? 'exit fullscreen' : 'enter fullscreen'
+	ui.button(label, function() {
+		ui.clear()
+		if( !FULLSCREEN ){
+		document.body.requestFullscreen()
+		FULLSCREEN = true
+		}
+		else{
+		document.exitFullscreen()
+		FULLSCREEN = false
+		}
+
+	}, 2, y, ui.xl-4, 6, true)
+
+	}
 }
 
 function pause(){
@@ -162,12 +196,21 @@ function pause(){
 //   	}, 2, ln+=3, ui.xl-4, 4, true)
 
 	if( MENU ){
+
   	ui.button('restart stage', function(){
+  		
   		MENU = false
 		vehicle.reset()
 		ui.clear()
 		MENU = false
   	}, 2, ln+=4, ui.xl-4, 6, true )
+
+	}
+
+	if( MENU ){
+
+		fullscreen( ln+=8 )
+
 	}
 }
 
