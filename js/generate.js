@@ -104,7 +104,6 @@ function Generate(){
 
 	let position = 0
 	let length = 666
-	length = 100
 	let section = 0
 	let section_angle = 0
 	let section_slope = 0
@@ -1022,7 +1021,7 @@ function Generate(){
 			}
 
 
-			if( flags[i] && Math.random() < 0.15){
+			if( flags[i] && Math.random() < 0.1 ){
 
 				let a = terrain.geometry.vertices[ i ].clone()
 				let t = tree()
