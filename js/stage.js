@@ -4,14 +4,14 @@ function Stage() {
 
 		this.start		 = new THREE.Vector3()
 		this.generate    = new Generate()
-		this.nodes		 = new THREE.Line( new THREE.Geometry() )
-		this.perimeter   = new THREE.LineSegments( new THREE.Geometry() )
-		this.segments    = new THREE.Mesh( new THREE.Geometry() )
-		this.surface     = new THREE.Mesh( new THREE.Geometry() )
-		this.terrain     = new THREE.Mesh( new THREE.Geometry() )
-		this.background  = new THREE.Mesh( new THREE.Geometry() )
-		this.features	 = new THREE.Mesh( new THREE.Geometry() )
-		this.checkpoints = new THREE.Mesh( new THREE.Geometry() )
+// 		this.nodes		 = new THREE.Line( new THREE.Geometry() )
+// 		this.perimeter   = new THREE.LineSegments( new THREE.Geometry() )
+// 		this.segments    = new THREE.Mesh( new THREE.Geometry() )
+// 		this.surface     = new THREE.Mesh( new THREE.Geometry() )
+// 		this.terrain     = new THREE.Mesh( new THREE.Geometry() )
+// 		this.background  = new THREE.Mesh( new THREE.Geometry() )
+// 		this.features	 = new THREE.Mesh( new THREE.Geometry() )
+// 		this.checkpoints = new THREE.Mesh( new THREE.Geometry() )
 		this.checkpoint = []
 		this.objectives = []
 		this.best = []

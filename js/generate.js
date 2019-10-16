@@ -191,8 +191,6 @@ function Generate(){
 
 		scope.terrain()
 
-// 		terrain.geometry.computeFaceNormals()
-// 		terrain.geometry.computeVertexNormals()
 		collision.geometry.mergeVertices()
 		collision.geometry.verticesNeedUpdate = true
 		collision.geometry.elementsNeedUpdate = true
@@ -207,15 +205,10 @@ function Generate(){
 
 		}
 
-// 		scene.add( collision )
 		background.geometry.copy( collision.geometry )
 		background.position.z -= 1
 
 		scene.add( background )
-
-// 		var helper = new THREE.VertexNormalsHelper( terrain, 2, 0x00ff00, 1 );
-// 		scene.add( helper )
-// 		console.log( helper )
 
 		stage.surface = collision.clone()
 		stage.start   = scope.start.clone()
@@ -226,18 +219,20 @@ function Generate(){
 
 		for( let i = 0; i < stage.best.length; i++ ){
 
-		let n = i+1
-		let text = 'cp' + n
-		let cp = ui.getTextFloat( stage.best[i] )
+			let n = i+1
+			let text = 'cp' + n
+			let cp = ui.getTextFloat( stage.best[i] )
 
-		while( text.length < 16-cp.length ){
-			
-			text += ' '
+			while( text.length < 16-cp.length ){
 
-		}
-		text += cp
+				text += ' '
 
-		ui.textbox( text , 2, 13+i*2 )
+			}
+
+			text += cp
+
+			ui.textbox( text , 2, 13+i*2 )
+
 		}
 
 	}
@@ -606,68 +601,75 @@ function Generate(){
 		else {
 
 			for( let n = 0; n < 3; n++ ){
-			if( turn ){
-				for( let i = 2; i < 4; i++ ){
-// 				decisions.push({ angle: i*sign, section: scope.randomInt(8,20) * scope.randomInt(1,3) })
-				decisions.push({ angle: i*sign, section: scope.randomInt(3,7) * scope.randomInt(1,4) })
+				if( turn ){
+					for( let i = 2; i < 4; i++ ){
 
+					decisions.push({ angle: i*sign, section: scope.randomInt(3,7) * scope.randomInt(1,4) })
+
+					}
 				}
-			} else{
-				decisions.push({ angle: 0, section: scope.randomInt(3,10) * scope.randomInt(1,4) })
-			}
+				else{
+
+
+					decisions.push({ angle: 0, section: scope.randomInt(3,10) * scope.randomInt(1,4) })
+				}
 			}
 		}
 
 		if( decisions.length == 0 ){
+
 			backtrack = true
-		} else{
-
-		if( position === section ){
-
-			turn = !turn
-			if ( turn ) { sign *= -1 }
-		
-			let decision = scope.randomInt(0,decisions.length)			
-			section = position+decisions[ decision ].section
-
-			section_angle = decisions[ decision ].angle
-			decisions.splice( decision, 1 )
-
-			history.push({
-
-				buffer: nodesBuffer.clone(),
-				position: position,
-				decisions: Array.from( decisions ),
-				history: Array.from( history ),
-				extruder: extruder.geometry.clone(),
-				location: new THREE.Vector3().copy(extruder.position),
-				turn: turn,
-				sign: sign,
-				instructions: Array.from( instructions )
-
-			})
 
 		}
+		else{
 
-		angle = section_angle
+			if( position === section ){
 
-		position++
-		instructions.push( { angle: angle, slope: slope } )
-		
-		this.extrude()
+				turn = !turn
+				if ( turn ) { sign *= -1 }
 
-		for( let j = 0; j < nodesBuffer.vertices.length; j++ ){
+				let decision = scope.randomInt(0,decisions.length)			
+				section = position+decisions[ decision ].section
 
-			let distance = nodesBuffer.vertices[position-1].distanceTo( nodesBuffer.vertices[j] )
-			let factor   = Math.abs( (position-1) - j )*0.065
-			if ( factor > 20 ) factor = 20
+				section_angle = decisions[ decision ].angle
+				decisions.splice( decision, 1 )
 
-			if( distance < 10*factor && Math.abs( ( position-1 ) - j ) > 8 ){
+				history.push({
 
-			backtrack = true
+					buffer: nodesBuffer.clone(),
+					position: position,
+					decisions: Array.from( decisions ),
+					history: Array.from( history ),
+					extruder: extruder.geometry.clone(),
+					location: new THREE.Vector3().copy(extruder.position),
+					turn: turn,
+					sign: sign,
+					instructions: Array.from( instructions )
+
+				})
 
 			}
-		}
+
+			angle = section_angle
+
+			position++
+			instructions.push( { angle: angle, slope: slope } )
+
+			this.extrude()
+
+			for( let j = 0; j < nodesBuffer.vertices.length; j++ ){
+
+				let distance = nodesBuffer.vertices[position-1].distanceTo( nodesBuffer.vertices[j] )
+				let factor   = Math.abs( (position-1) - j )*0.065
+				if ( factor > 20 ) factor = 20
+
+				if( distance < 10*factor && Math.abs( ( position-1 ) - j ) > 8 ){
+
+				backtrack = true
+
+				}
+
+			}
 
 		}
 
@@ -720,7 +722,6 @@ function Generate(){
 	}
 
 	for( let s = 0; s < 2; s++ ){
-
 	for( let i = 0; i < vertices[s].length; i++ ){
 
 		let n = ( s === 0 ) ? 1 : -1
@@ -752,13 +753,13 @@ function Generate(){
 			
 		if( i > 0 ){
 
-		vertices[s] = []
+			vertices[s] = []
 
-		for( let v = 0; v < buffer[s].length; v++ ){
+			for( let v = 0; v < buffer[s].length; v++ ){
 
-			vertices[s][v] = terrain.geometry.vertices[buffer[s][v]]
+				vertices[s][v] = terrain.geometry.vertices[buffer[s][v]]
 
-		}
+			}
 
 		}
 
@@ -771,78 +772,74 @@ function Generate(){
 
 			target[s][v].z -= i/5
 
-		let flag = false
-		let ignore = false
+			let flag = false
+			let ignore = false
 
-		if( vertices[s][v] !== undefined && vertices[s][v-1] !== undefined ){
+			if( vertices[s][v] !== undefined && vertices[s][v-1] !== undefined ){
 
-			if( target[s][v] === undefined ){
-			
-				target[s][v] = target[s][v-1].clone()
+				if( target[s][v] === undefined ){
 
-			}
+					target[s][v] = target[s][v-1].clone()
 
-			else{
+				}
 
+				else{
 
-			terrain.geometry.computeBoundingSphere()
+					terrain.geometry.computeBoundingSphere()
 
-			let location = vertices[s][v].clone().add( target[s][v] )
-			location.z -= 100
-			let up = new THREE.Vector3(0,0,1)
-			raycaster.set( location, up )
+					let location = vertices[s][v].clone().add( target[s][v] )
+					location.z -= 100
+					let up = new THREE.Vector3(0,0,1)
+					raycaster.set( location, up )
 
-			location.z += 100
+					location.z += 100
 
-			let intersects = raycaster.intersectObjects( [ terrain ], true )
+					let intersects = raycaster.intersectObjects( [ terrain ], true )
 
-			if( intersects.length > 0 ){
+					if( intersects.length > 0 ){
 
-				for( let intersect in intersects ){
+						for( let intersect in intersects ){
 
-// 				const mesh = new THREE.Mesh( new THREE.IcosahedronGeometry( 1, 0) )
-// 				mesh.material.color = new THREE.Color( palette[Math.floor(i)] )
-// 				mesh.position.copy( intersects[intersect].point )
-// 				mesh.position.z += intersect*2
-// 				scene.add( mesh )
+							if( intersects[intersect].point.distanceTo( location ) > 0.01 ){
 
-					if( intersects[intersect].point.distanceTo( location ) > 0.01 ){
+							buffer[s][v] = undefined
+							flag = true
 
-					buffer[s][v] = undefined
-					flag = true
+							}
+
+						}
+
+					}
+
+				}
+
+				if( !flag ){
+
+					terrain.geometry.vertices.push( vertices[s][v].clone() )
+					terrain.geometry.vertices.push( vertices[s][v].clone().add( target[s][v]) )
+
+					buffer[s][v] = terrain.geometry.vertices.length-1
+
+					if( v > 0  ){
+
+					terrain.geometry.vertices.push( vertices[s][v-1].clone() )
+					const length = terrain.geometry.vertices.length
+
+						if( s === 0 ){
+
+						terrain.geometry.faces.push( new THREE.Face3( length-2, length-1, length-3 ) )
+
+						}
+						else if( s === 1 ){
+
+						terrain.geometry.faces.push( new THREE.Face3( length-1, length-2, length-3 ) )
+
+						}
 
 					}
 				}
 			}
 
-			}
-
-			if( !flag ){
-
-			terrain.geometry.vertices.push( vertices[s][v].clone() )
-			terrain.geometry.vertices.push( vertices[s][v].clone().add( target[s][v]) )
-
-			buffer[s][v] = terrain.geometry.vertices.length-1
-
-				if( v > 0  ){
-
-				terrain.geometry.vertices.push( vertices[s][v-1].clone() )
-				const length = terrain.geometry.vertices.length
-
-					if( s === 0 ){
-
-					terrain.geometry.faces.push( new THREE.Face3( length-2, length-1, length-3 ) )
-
-					}
-					if( s === 1 ){
-
-					terrain.geometry.faces.push( new THREE.Face3( length-1, length-2, length-3 ) )
-
-					}
-
-				}
-			}
-		}
 		}
 
 		for( let v = 1; v < buffer[s].length; v++ ){
@@ -898,52 +895,6 @@ function Generate(){
 	// End Iterations
 	}
 
-	// Final Decimation
-// 	console.log( 'Final Decimation')
-
-// 	terrain.geometry.verticesNeedUpdate = true
-// 	terrain.geometry.elementsNeedUpdate = true
-// 	terrain.geometry.computeFaceNormals()
-// 	terrain.geometry.mergeVertices()
-// 	terrain.geometry.computeBoundingSphere()
-
-// 	raycaster.far = 100
-
-// 		for( let v = 0; v < terrain.geometry.vertices.length; v++ ){			
-
-// 			let location = terrain.geometry.vertices[v].clone()
-// 			location.z -= 100
-// 			let up = new THREE.Vector3(0,0,1)
-
-// 			raycaster.set( location, up )
-
-// 			let intersects = raycaster.intersectObjects( [ terrain ], true )
-
-// 			if ( intersects.length > 0 ){
-
-// 				for( intersect in intersects ){
-				
-// 				if( intersects[intersect].face.a !== v
-// 					&& intersects[intersect].face.b !== v
-// 					&& intersects[intersect].face.c !== v ){
-						
-// 					test = true
-// 					const mesh = new THREE.Mesh( new THREE.IcosahedronGeometry( 1, 0) )
-// 					mesh.material.color = new THREE.Color( palette[Math.floor(0)] )
-// 					mesh.position.copy( intersects[intersect].point )
-// 					mesh.position.z += intersect
-// 					scene.add( mesh )
-
-// // 					terrain.geometry.faces.splice[intersects[intersect].faceIndex, 1]
-// // 					terrain.geometry.elementsNeedUpdate
-
-// 				}
-
-// 				}
-
-// 			}
-// 		}
-
 	console.log('Apply Noise')
 	terrain.geometry.verticesNeedUpdate = true
 	terrain.geometry.elementsNeedUpdate = true
@@ -970,6 +921,7 @@ function Generate(){
 
 	this.trees()
 
+	// End Terrain Growth
 	}
 
 	this.trees = function(){
@@ -977,7 +929,9 @@ function Generate(){
 		const flags = []
 
 		for( let i = 0; i < terrain.geometry.vertices.length; i++ ){
+
 			flags[i] = false
+
 		}
 
 		const faces = terrain.geometry.faces
@@ -1190,7 +1144,9 @@ function Generate(){
     let factor = 0.5
 
     for (let i = 0; i < geometry.vertices.length; i++) {
+
       noise[i] = 0
+
     }
 
     for (let r = 0; r < 2; r++) {
@@ -1224,8 +1180,10 @@ function Generate(){
 
         }
 
-      geometry.vertices[i].z += noise[i]*factor 
+      geometry.vertices[i].z += noise[i]*factor
+      
     }
+
   }
 
     this.searchSpace = function(p){

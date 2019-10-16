@@ -115,7 +115,7 @@ function UI(){
     }
     }
     
-    vehicle.display()
+    if( MENU || PLAY ) vehicle.display()
   }
   
   this.clear = function(){

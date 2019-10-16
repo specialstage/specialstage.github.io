@@ -26,35 +26,34 @@ window.focus = resize
 	
 let LOADSTATUS = 0
 
-let scene, camera, renderer, stage, vehicle, control, ui
+let scene, camera, renderer, stage, vehicle, control, ui, vhs
 
 let UP
-let PLAY    = false
-let IMPORT  = false
-let BG 	    = palette[0]
-let FRAME	= 0
+let PLAY    	= false
+let IMPORT  	= false
+let BG 	    	= palette[0]
+let FRAME		= 0
 
-let TIME = 0
-let TIMER = 0
-let DT = 0
-let FPS = 0
-let COUNTER = 0
-let TIMEOUTS = 0
-let DNF = false
-let REASON = 'dnf'
-let FULLSCREEN = false
-let MODE = 0
-let LOAD = 0
-let MENU = false
-let MOBILE = false
+let TIME		= 0
+let TIMER		= 0
+let DT			= 0
+let FPS			= 0
+let COUNTER		= 0
+let TIMEOUTS	= 0
+let DNF			= false
+let REASON		= 'dnf'
+let FULLSCREEN	= false
+let MODE 		= 0
+let LOAD 		= 0
+let MENU 		= false
+let MOBILE 		= false
 
 function init(){
 
 	window.addEventListener('touchstart', activateTouch )
 
-	let bg = new THREE.Color(BG)
 	scene = new THREE.Scene()
-	scene.background = bg
+	scene.background = BG
 
 	UP = new THREE.Vector3(0,0,1)
 	camera = new THREE.PerspectiveCamera()
@@ -71,7 +70,7 @@ function init(){
 	scene.add(camera)
 
 	renderer = new THREE.WebGLRenderer({logarithmicDepthBuffer: true, antialias: false })
-	renderer.setClearColor(bg)
+	renderer.setClearColor(BG)
 	renderer.domElement.id = 'renderer';
 	document.body.appendChild(renderer.domElement)
 
@@ -86,15 +85,17 @@ function init(){
 	ui.connect()
 
 	vehicle = new Vehicle()
-
+	vhs = new VHS
 	resize()
 	menu()
 
 }
 
 function activateTouch(){
+
 	MOBILE = true
 	window.removeEventListener('touchstart', activateTouch)
+
 }
 
 function resize(){
@@ -181,19 +182,6 @@ function pause(){
 		ui.textbox('repair cost   100Y', 2, ln +=2)
 
 	}
-//   	ui.button('generate new stage', function(){
-//   		MENU = false
-// 		ui.clear()
-// 		renderer.clear()
-// 	    title()
-// 	    vehicle.reset()
-// 	    vehicle.disconnect()
-
-// 		renderer.render( scene, camera )
-//   		stage.reset()
-
-// 		PLAY = false
-//   	}, 2, ln+=3, ui.xl-4, 4, true)
 
 	if( MENU ){
 
@@ -215,36 +203,44 @@ function pause(){
 }
 
 function title(){
+
 	ui.textbox('special stage',  2, 3 )
 	ui.textbox('-', 2, 6 )
+
 }
 
 function menuButton(){
 
   	ui.button('menu', function(){
 
-  	ui.clear()
-	MENU = !MENU
-	if( !MENU ) vehicle.display()
+		ui.clear()
+		MENU = !MENU
+		if( !MENU && PLAY ) vehicle.display()
+
   	}, ui.xl-10, 2, 8, 2, true, false )
 
 }
 
 function results(){
+	let RESULTS = true
 	ui.clear()
 	ui.textbox( vehicle.TEXTTIME, 2, 3 )
 	vehicle.display()
 	ui.textbox( '-', 2, 15 )
 	let ln = 15
+
 	if( vehicle.getReward() > 0 ){
-	ui.textbox('new record', 2, ln+=2 )
-	ln+=2
-	ui.textbox( 'reward    ' + vehicle.getReward() + 'Y', 2, ln+=2 )
+
+		ui.textbox('new record', 2, ln+=2 )
+		ln+=2
+		ui.textbox( 'reward    ' + vehicle.getReward() + 'Y', 2, ln+=2 )
+
 	}
 
 	ui.textbox( 'total     ' + vehicle.getYen() + 'Y', 2, ln+=2 )
 
 	 ui.button('next stage', function(){
+
   		MENU = false
   		PLAY = false
 		ui.clear()
@@ -253,17 +249,31 @@ function results(){
 	    vehicle.disconnect()
 	    vehicle.reset()
 		stage.reset()
+
   	}, 2, ln += 4, ui.xl-4, 6, true)
 
-	if( PLAY ){
+	if( PLAY || vhs.PLAY ){
 
   	ui.button('restart stage', function(){
-  		MENU = false
-		vehicle.reset()
 
+  		MENU = false
+  		PLAY = true
+		vehicle.reset()
 		ui.clear()
+		RESULTS = false
+
   	}, 2, ln+=9, ui.xl-4, 6, true )
 
+	if( RESULTS ){
+  	ui.button('view replay', function(){
+
+  		vhs.PLAY = true
+  		PLAY = false
+  		MENU = false
+  		ui.clear()
+
+  	}, 2, ln+=9, ui.xl-4, 6, true)
+	}
 	}
 
 }
@@ -281,21 +291,43 @@ function main(){
   	if( PLAY ){
 
   		menuButton()
+		vhs.update()
   		vehicle.update()
 		vehicle.display()
+
   		ui.textbox( vehicle.TEXTTIME, 2, 3 )
 		ui.textbox( 'fps ' + FPS, 2, ui.yl-4)
   		ui.textbox( 'vel' + ' ' + vehicle.VELOCITY, 2, ui.yl-6 )
 
 		if( vehicle.END && vehicle.OBJECTIVE == 0 ){
+
 			results()
+
 		}
 		else if( MOBILE && !MENU ){
+
 			ui.dpad()
+
 		}
 		else if( MENU ){
+
 			pause()
+
 		}
+
+  	}
+  	else if( vhs.PLAY ){
+
+  		vhs.update()
+
+  		if( MENU ){
+
+  			results()
+
+  		}
+
+		menuButton()
+
 
   	}
   	else if( stage.generate.END === true ){
@@ -307,15 +339,8 @@ function main(){
 			TIMER = 0
 			ui.clear()
 		}, 2, ui.yl-12, ui.xl-4, 6, true )
-
   	}
   	
 	renderer.render( scene, camera )
-
-}
-
-function demo(){
-
-	
 
 }

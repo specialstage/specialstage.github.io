@@ -1,3 +1,9 @@
+October 16, 2019
+
+	Added replay system ( VHS )
+	Tidied up code. Made more messes.
+
+
 Ocotober 04, 2019
 
 	Palette updates continued.

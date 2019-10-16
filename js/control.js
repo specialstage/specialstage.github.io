@@ -69,6 +69,11 @@ function Control(){
       case('Enter'):
         scope.ENTER = input
       break
+      case('`'):
+      
+		vhs.PLAY = true
+		PLAY = false
+      break
     }
   }
 
