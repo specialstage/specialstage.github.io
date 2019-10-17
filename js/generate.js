@@ -116,6 +116,7 @@ function Generate(){
 	let history = []
 	let instructions = []
 	let timer   = 0
+	let framecount = 0
 	let timeout = 50000
 	let loadtime = 0
 	let turn = true
@@ -128,7 +129,7 @@ function Generate(){
 	let PATH		= false
 	let GENERATE	= false
 	let IMPORT		= false
-	let HEURISTIC	= ( 36+Math.random()-0.5 )/2
+	let HEURISTIC	= ( 36 )/2
 
 	let interval = 0
 
@@ -239,9 +240,10 @@ function Generate(){
 
 	this.reset = function(){
 
-	HEURISTIC	= ( 36+Math.random()-0.5 )/2
+	HEURISTIC	= ( 36+scope.random()-0.5 )/2
 	iterator = 0
 	timer = 0
+	framecount = 0
 
 		nodes.geometry.dispose()
 		segments.geometry.dispose()
@@ -294,7 +296,7 @@ function Generate(){
 		history = []
 
 		turn = true
-		sign = Math.random()*0.5
+		sign = scope.random()*0.5
 		sign /= Math.abs(sign)
 		stop = false
 
@@ -365,7 +367,7 @@ function Generate(){
 
 			if( iterator > 30 && angle === 0 && instructions[iterator-1].angle != 0 ){
 			 slope = scope.randomInt(3,4)
-			 let random = Math.random()
+			 let random = scope.random()
 
 			 if( random > 0.1 ){
 			 	slope *= -1
@@ -563,7 +565,7 @@ function Generate(){
 		while( dt < 16 && !PATH ){
 
 		let decisions = []
-
+		framecount ++
 		if( backtrack && history.length > 1 ){
 			parameter = history[history.length-1]
 
@@ -671,19 +673,19 @@ function Generate(){
 
 			}
 
+			if( framecount > timeout ){
+				stage.reset()
+	// 			ui.clear()
+	// 			ui.textbox('re-attemping path generation',2, 4)
+				timer = 0
+				TIMEOUTS ++
+			}
+		
 		}
 
 		nodesBuffer.verticesNeedUpdate = true
 		dt = window.performance.now()-time
 		timer += dt
-
-		if( timer > timeout ){
-			stage.reset()
-// 			ui.clear()
-// 			ui.textbox('re-attemping path generation',2, 4)
-			timer = 0
-			TIMEOUTS ++
-		}
 
 		if( position >= section_end ){
 			PATH = true
@@ -975,7 +977,7 @@ function Generate(){
 			}
 
 
-			if( flags[i] && Math.random() < 0.1 ){
+			if( flags[i] && scope.random() < 0.1 ){
 
 				let a = terrain.geometry.vertices[ i ].clone()
 				let t = tree()
@@ -996,7 +998,7 @@ function Generate(){
 		function tree( p ){
 
 		  var scale = 1
-		  var segments   = Math.floor(Math.random()*8)+6
+		  var segments   = Math.floor(scope.random()*8)+6
 		  var branch = 6
 		  var angle = (Math.PI*2)/branch
 		  var weight = 0.3
@@ -1126,9 +1128,19 @@ function Generate(){
 
 	}
 
+	this.random = function(){
+
+// 	let n = Math.random()
+	var n = Math.sin(SEED++) * 10000;
+	n -= Math.floor( n )
+
+	return n
+
+	}
+
 	this.randomInt = function( lo, hi ){
 	
-		return Math.floor( Math.random()*( hi-lo ))+lo
+		return Math.floor( scope.random()*( hi-lo ))+lo
 
 	}
 
@@ -1140,7 +1152,7 @@ function Generate(){
 
     let hi = 0
     let lo = 0
-    const z = Math.random()*1000
+    const z = scope.random()*1000
     let factor = 0.5
 
     for (let i = 0; i < geometry.vertices.length; i++) {

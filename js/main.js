@@ -25,6 +25,7 @@ window.focus = resize
 	}
 	
 let LOADSTATUS = 0
+let SEED = Math.floor( Math.random()*999999 )
 
 let scene, camera, renderer, stage, vehicle, control, ui, vhs
 
@@ -179,7 +180,7 @@ function pause(){
 	if( DNF ){
 		ui.textbox('dnf', 2, ln+=4)
 		ui.textbox('reason        ' + REASON, 2, ln +=2)
-		ui.textbox('repair cost   100Y', 2, ln +=2)
+		ui.textbox('repair cost   Y100', 2, ln +=2)
 
 	}
 
@@ -233,11 +234,11 @@ function results(){
 
 		ui.textbox('new record', 2, ln+=2 )
 		ln+=2
-		ui.textbox( 'reward    ' + vehicle.getReward() + 'Y', 2, ln+=2 )
+		ui.textbox( 'reward    Y' + vehicle.getReward(), 2, ln+=2 )
 
 	}
 
-	ui.textbox( 'total     ' + vehicle.getYen() + 'Y', 2, ln+=2 )
+	ui.textbox( 'total     Y' + vehicle.getYen(), 2, ln+=2 )
 
 	 ui.button('next stage', function(){
 
