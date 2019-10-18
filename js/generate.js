@@ -1130,11 +1130,12 @@ function Generate(){
 
 	this.random = function(){
 
-// 	let n = Math.random()
-	var n = Math.sin(SEED++) * 10000;
-	n -= Math.floor( n )
+		SEED = ( SEED + 1 ) % 2147483647
 
-	return n
+		let n = Math.sin(SEED) * 10000;
+		n -= Math.floor( n )
+
+		return n
 
 	}
 

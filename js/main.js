@@ -90,6 +90,32 @@ function init(){
 	resize()
 	menu()
 
+	// LOAD SEED FROM URL
+	let url = window.location.href
+	let seed = SEED
+	let challenge = false
+
+	for( let i = 0; i < url.length; i++ ){
+
+		if( challenge ){
+			char = url.charCodeAt(i)
+			length = seed.toString().length
+			console.log( length )
+			seed *= Math.pow( 10, char.toString().length )
+			seed += char
+			seed %= 2147483647
+		}
+		if( url.charAt(i) === '#' && !challenge ){
+			challenge = true
+			seed = 0
+		}
+
+	}
+
+	if( challenge ){
+		SEED = seed
+	}
+
 }
 
 function activateTouch(){
