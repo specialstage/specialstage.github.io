@@ -325,7 +325,11 @@ function Vehicle(){
 		  if( objective == 4 ){
 			this.check = true
 
-			if( AT < stage.best[3]  ) REWARD = Math.round( ( stage.best[3]-AT ) *10 )
+			if( AT < stage.best[3]  ){
+
+				REWARD = Math.round( ( stage.best[3]-AT ) *10 )				
+
+			}
 			YEN += REWARD
 
 			objective = 0

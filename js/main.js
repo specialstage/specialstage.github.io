@@ -25,7 +25,9 @@ window.focus = resize
 	}
 	
 let LOADSTATUS = 0
-let SEED = Math.floor( Math.random()*999999 )
+
+let SEED_NAME = ''
+let SEED = Math.floor( Math.random()*999999 ).toString()
 
 let scene, camera, renderer, stage, vehicle, control, ui, vhs
 
@@ -48,6 +50,8 @@ let MODE 		= 0
 let LOAD 		= 0
 let MENU 		= false
 let MOBILE 		= false
+let CHALLENGE	= false
+let	OBJECTIVES	= []
 
 function init(){
 
@@ -91,31 +95,138 @@ function init(){
 	menu()
 
 	// LOAD SEED FROM URL
+	decodeURL()
+
+}
+
+function decodeURL(){
+
 	let url = window.location.href
+	let base64 = ''
 	let seed = SEED
-	let challenge = false
+	let objective = 0
+	let buffer = ''
+	let parse = false
 
 	for( let i = 0; i < url.length; i++ ){
 
-		if( challenge ){
-			char = url.charCodeAt(i)
-			length = seed.toString().length
-			console.log( length )
-			seed *= Math.pow( 10, char.toString().length )
-			seed += char
-			seed %= 2147483647
+			let char = url.charAt(i)
+
+			if( parse ){
+
+				base64 += url.charAt(i)
+
+			}
+			if( char === '#' ){
+
+				parse = true	
+
+			}
+
+	}
+
+	if( parse ){
+
+		console.log( base64 )
+		base64 = atob( base64 )
+		console.log( base64 )
+		seed = ''
+		
+		for( let i = 0; i < base64.length; i++ ){
+
+			let char = base64.charAt(i)
+
+			if( char ==='#'){
+
+				CHALLENGE = true
+
+			}
+			else if( CHALLENGE ){
+				
+				if( char === ',' ){
+
+					OBJECTIVES[objective] = buffer
+
+					buffer = ''
+					objective++
+
+				}
+				else if( char != undefined ){
+
+					buffer += char
+
+				}
+
+			}
+			else if( !CHALLENGE ) {
+
+				seed += char.toString()
+
+			}
+
 		}
-		if( url.charAt(i) === '#' && !challenge ){
-			challenge = true
-			seed = 0
+	
+
+	}
+
+
+	console.log(OBJECTIVES)
+	if( CHALLENGE ){
+		SEED = parseInt( seed )
+	}
+		
+}
+
+function encodeURL(){
+
+	let data = '#'
+	let location = window.location.href
+	let buffer = ''
+
+	for( let i = 0; i < location.length; i++ ){
+
+		if( location.charAt(i) === '#' ){
+
+			location = buffer
+			break
+
+		}
+		else{
+
+		buffer += location.charAt(i)	
+
 		}
 
 	}
 
-	if( challenge ){
-		SEED = seed
+	let best   = vehicle.getCT()
+	let base64 = SEED.toString()
+	base64 += '#'
+
+	for( let i in best ){
+
+		let string = ui.getTextFloat( best[i] )		 
+		base64 = base64.concat( string )
+		base64 += ','
+
 	}
 
+	base64 = btoa( base64 )
+	data = data.concat( base64 )
+
+	let string = location.concat( data )
+
+	const element = document.createElement('textarea');
+	element.value = string;
+	element.setAttribute('readonly', '');
+	element.style = {position: 'absolute', left: '-9999px'};
+
+	document.body.appendChild(element);
+	element.select();
+	document.execCommand('copy');
+   	document.body.removeChild(element);
+
+	console.log( string )
 }
 
 function activateTouch(){
@@ -234,6 +345,12 @@ function title(){
 	ui.textbox('special stage',  2, 3 )
 	ui.textbox('-', 2, 6 )
 
+	if( CHALLENGE ){
+		ui.textbox('rival challenge',2,10)
+		ui.textbox('seed ' + SEED, 2,14)
+		ui.textbox('time ' + ui.getTextFloat( OBJECTIVES[3] ),2,16)
+	}
+
 }
 
 function menuButton(){
@@ -276,6 +393,7 @@ function results(){
 	    vehicle.disconnect()
 	    vehicle.reset()
 		stage.reset()
+		CHALLENGE = false
 
   	}, 2, ln += 4, ui.xl-4, 6, true)
 
@@ -300,7 +418,14 @@ function results(){
   		ui.clear()
 
   	}, 2, ln+=9, ui.xl-4, 6, true)
-	}
+
+  	ui.button('copy challenge url', function(){
+
+  		encodeURL()
+
+  	}, 2, ln+=9, ui.xl-4, 6, true)
+  	  	
+	} 
 	}
 
 }

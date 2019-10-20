@@ -1060,7 +1060,16 @@ function Generate(){
 
 		for( let k = 0; k < 4; k++ ){
 
-			stage.best[k] = ( i*( k+1 ) )/( HEURISTIC )
+			if( CHALLENGE ){
+
+				stage.best[k] = OBJECTIVES[k]
+
+			}
+			else{
+
+				stage.best[k] = ( i*( k+1 ) )/( HEURISTIC )
+
+			}
 
 		}
 
