@@ -67,6 +67,12 @@ function Generate(){
 	background.material.blendMode = THREE.MultiplyBlending
 	background.material.transparent = true
 
+	const stars = new THREE.Points( new THREE.Geometry() )
+	stars.material.color = palette[1]
+	stars.material.sizeAttenuation = false
+	stars.material.size = 1.5
+	stars.material.fog = false
+
 	let edges = []
 	this.targets = []
 
@@ -176,6 +182,7 @@ function Generate(){
 		scene.remove( terrain )
 		scene.remove( background )
 		scene.remove( trees )
+		scene.remove( stars )
 		
 		for( let i in scope.checkpoints ){
 
@@ -210,6 +217,27 @@ function Generate(){
 		background.position.z -= 1
 
 		scene.add( background )
+
+		const buffer = new THREE.IcosahedronGeometry(1200,4)
+
+// 		scene.remove( stars )
+// 		stars.geometry.dispose()
+// 		stars.geometry.copy( new THREE.Geometry() )
+
+		for( let i in buffer.vertices ){
+
+			let random = scope.random()
+
+			if( random < 0.3 ){
+
+				stars.geometry.vertices.push( buffer.vertices[i].clone() )
+
+			}
+		}
+
+		buffer.dispose()
+		stars.geometry.computeBoundingSphere()
+		scene.add( stars )
 
 		stage.surface = collision.clone()
 		stage.start   = scope.start.clone()
@@ -253,7 +281,8 @@ function Generate(){
 		terrain.geometry.dispose()
 		collision.geometry.dispose()
 		trees.geometry.dispose()
-
+		stars.geometry.dispose()
+		
 		segmentsBuffer.dispose()
 		perimeterBuffer.dispose()
 		nodesBuffer.dispose()
