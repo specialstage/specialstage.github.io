@@ -45,7 +45,7 @@ function Stage() {
 
 	this.reset = function(){
 		
-		SEED = Math.floor( Math.random()*999999 )
+		SEED = Math.floor( Math.random()*2147483647 )
 		this.disconnect()
 		this.generate = new Generate()
 		this.connect()

@@ -2,6 +2,7 @@ function Generate(){
 
 	scope = this
 
+	this.SEED = 0
 	let iterator  = 0
 
 // 	const mesh = new THREE.Line( new THREE.Geometry() )
@@ -154,6 +155,8 @@ function Generate(){
 
 	this.connect = function(){
 
+		scope.SEED = SEED
+		
 		scene.add( extruder )
 		scene.add( nodes )
 		scene.add( segments )

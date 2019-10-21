@@ -27,7 +27,7 @@ window.focus = resize
 let LOADSTATUS = 0
 
 let SEED_NAME = ''
-let SEED = Math.floor( Math.random()*999999 ).toString()
+let SEED = Math.floor( Math.random()*2147483647 )
 
 let scene, camera, renderer, stage, vehicle, control, ui, vhs
 
@@ -200,7 +200,7 @@ function encodeURL(){
 	}
 
 	let best   = vehicle.getCT()
-	let base64 = SEED.toString()
+	let base64 = stage.generate.SEED.toString()
 	base64 += '#'
 
 	for( let i in best ){
@@ -394,7 +394,7 @@ function results(){
 	    vehicle.reset()
 		stage.reset()
 		CHALLENGE = false
-
+		
   	}, 2, ln += 4, ui.xl-4, 6, true)
 
 	if( PLAY || vhs.PLAY ){
@@ -419,12 +419,13 @@ function results(){
 
   	}, 2, ln+=9, ui.xl-4, 6, true)
 
+	if( PLAY ){
   	ui.button('copy challenge url', function(){
 
   		encodeURL()
 
   	}, 2, ln+=9, ui.xl-4, 6, true)
-  	  	
+	}
 	} 
 	}
 
