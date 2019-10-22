@@ -29,7 +29,7 @@ let LOADSTATUS = 0
 let SEED_NAME = ''
 let SEED = Math.floor( Math.random()*2147483647 )
 
-let scene, camera, renderer, stage, vehicle, control, ui, vhs
+let scene, camera, renderer, stage, vehicle, control, ui, vhs, state
 
 let UP
 let PLAY    	= false
@@ -42,7 +42,7 @@ let TIMER		= 0
 let DT			= 0
 let FPS			= 0
 let COUNTER		= 0
-let TIMEOUTS	= 0
+let TIMEOUT		= 0
 let DNF			= false
 let REASON		= 'dnf'
 let FULLSCREEN	= false
@@ -55,8 +55,9 @@ let	OBJECTIVES	= []
 
 function init(){
 
+	decodeURL()
 	window.addEventListener('touchstart', activateTouch )
-
+	
 	scene = new THREE.Scene()
 	scene.background = BG
 
@@ -84,97 +85,130 @@ function init(){
 	control = new Control()
 	control.connect()
 
-	stage = new Stage()
-
 	ui = new UI()
 	ui.connect()
 
+	stage	= new Stage()
 	vehicle = new Vehicle()
-	vhs = new VHS
-	resize()
-	menu()
+	vhs		= new VHS()
+	state	= new State()
 
-	// LOAD SEED FROM URL
-	decodeURL()
+	resize()
+	state.start()
 
 }
 
-function decodeURL(){
+function activateTouch(){
 
-	let url = window.location.href
-	let base64 = ''
-	let seed = SEED
-	let objective = 0
-	let buffer = ''
-	let parse = false
+	MOBILE = true
+	window.removeEventListener('touchstart', activateTouch)
 
-	for( let i = 0; i < url.length; i++ ){
+}
 
-			let char = url.charAt(i)
+function resize(){
 
-			if( parse ){
+	const w = window.innerWidth
+	const h = window.innerHeight
 
-				base64 += url.charAt(i)
+	renderer.clear()
+	renderer.setSize(w,h)
 
-			}
-			if( char === '#' ){
+	if ( camera.isPerspectiveCamera ){
 
-				parse = true	
+	  camera.aspect = w/h
 
-			}
+	}
+	else {
+
+	  camera.top    = h/-2
+	  camera.bottom = h/2
+	  camera.left   = w/-2
+	  camera.right  = w/2
 
 	}
 
-	if( parse ){
+	camera.updateProjectionMatrix()
+	ui.resize()
 
-		console.log( base64 )
-		base64 = atob( base64 )
-		console.log( base64 )
-		seed = ''
-		
-		for( let i = 0; i < base64.length; i++ ){
+}
 
-			let char = base64.charAt(i)
+function menu(){
 
-			if( char ==='#'){
+  	ui.button('   menu   ', function(){
 
-				CHALLENGE = true
+		ui.clear()
+		MENU = !MENU
+		if( !MENU && PLAY ) vehicle.display()
+		menu()
+		state.instruments()
 
-			}
-			else if( CHALLENGE ){
-				
-				if( char === ',' ){
+  	}, ui.xl-8, 0, 8, 6, true, false )
 
-					OBJECTIVES[objective] = buffer
+}
 
-					buffer = ''
-					objective++
+function main(){
 
-				}
-				else if( char != undefined ){
+	const id = window.requestAnimationFrame( main )
+	let time = window.performance.now()
 
-					buffer += char
+	FPS  = time - TIME
+	TIME = time
+	FPS = Math.round( 100/FPS )*10
 
-				}
+  	if( PLAY ){
 
-			}
-			else if( !CHALLENGE ) {
+		vhs.record( vehicle )
+  		vehicle.update()
+		vehicle.display()
 
-				seed += char.toString()
+		state.instruments()
 
+		if( MOBILE && !MENU ){
+
+			ui.dpad()
+
+		}
+		if( vehicle.END && vehicle.OBJECTIVE == 0 && MENU){
+
+			state.results()
+			TIMEOUT++
+
+			if( TIMEOUT > 300 ){
+				PLAY = false
+				vhs.PLAY = true
 			}
 
 		}
-	
+		else if( MENU ){
 
-	}
+			state.pause()
 
+		}
 
-	console.log(OBJECTIVES)
-	if( CHALLENGE ){
-		SEED = parseInt( seed )
-	}
-		
+		menu()
+
+  	}
+  	else if( vhs.PLAY ){
+
+  		vhs.play( vehicle )
+
+  		if( MENU ){
+
+  			state.results()
+
+  		}
+
+		menu()
+
+  	}
+  	else if( stage.generate.END === true ){
+  		
+		state.readycheck()
+
+  	}
+  	
+	renderer.render( scene, camera )
+
 }
 
 function encodeURL(){
@@ -226,274 +260,78 @@ function encodeURL(){
 	document.execCommand('copy');
    	document.body.removeChild(element);
 
-	console.log( string )
 }
 
-function activateTouch(){
+function decodeURL(){
 
-	MOBILE = true
-	window.removeEventListener('touchstart', activateTouch)
+	let url = window.location.href
+	let base64 = ''
+	let seed = SEED
+	let objective = 0
+	let buffer = ''
+	let parse = false
 
-}
+	for( let i = 0; i < url.length; i++ ){
 
-function resize(){
+			let char = url.charAt(i)
 
-	const w = window.innerWidth
-	const h = window.innerHeight
+			if( parse ){
 
-	renderer.clear()
-	renderer.setSize(w,h)
+				base64 += url.charAt(i)
 
-	if ( camera.isPerspectiveCamera ){
+			}
+			if( char === '#' ){
 
-	  camera.aspect = w/h
+				parse = true	
 
-	}
-	else {
-
-	  camera.top    = h/-2
-	  camera.bottom = h/2
-	  camera.left   = w/-2
-	  camera.right  = w/2
+			}
 
 	}
 
-	camera.updateProjectionMatrix()
-	ui.resize()
+	if( parse ){
 
-}
+		base64 = atob( base64 )
+		seed = ''
+		
+		for( let i = 0; i < base64.length; i++ ){
 
-function menu(){
+			let char = base64.charAt(i)
 
-	const id = window.requestAnimationFrame( menu )
-	let START = false
-	title()
+			if( char ==='#'){
 
-	ui.button('start', function(){
-		START = true
-		ui.clear()
-		title()
-		stage.connect()
-		window.cancelAnimationFrame( id )
-		window.requestAnimationFrame( main )
+				CHALLENGE = true
 
-	}, 2, ui.yl-12, ui.xl-4, 6, true )
+			}
+			else if( CHALLENGE ){
+				
+				if( char === ',' ){
 
-	if( !START ){
+					OBJECTIVES[objective] = buffer
 
-	fullscreen( ui.yl-20 )
+					buffer = ''
+					objective++
 
-	}
+				}
+				else if( char != undefined ){
 
-	renderer.render( scene, camera )
+					buffer += char
 
-}
+				}
 
-function fullscreen( y ){
+			}
+			else if( !CHALLENGE ) {
 
-	if (document.body.requestFullscreen) {
+				seed += char.toString()
 
-	let label = ( FULLSCREEN ) ? 'exit fullscreen' : 'enter fullscreen'
-	ui.button(label, function() {
-		ui.clear()
-		if( !FULLSCREEN ){
-		document.body.requestFullscreen()
-		FULLSCREEN = true
+			}
+
 		}
-		else{
-		document.exitFullscreen()
-		FULLSCREEN = false
-		}
-
-	}, 2, y, ui.xl-4, 6, true)
+	
 
 	}
-}
-
-function pause(){
-
-	let ln = vehicle.getCT().length*2+4
-
-	if( DNF ){
-		ui.textbox('dnf', 2, ln+=4)
-		ui.textbox('reason        ' + REASON, 2, ln +=2)
-		ui.textbox('repair cost   Y100', 2, ln +=2)
-
-	}
-
-	if( MENU ){
-
-  	ui.button('restart stage', function(){
-  		
-  		MENU = false
-		vehicle.reset()
-		ui.clear()
-		MENU = false
-  	}, 2, ln+=4, ui.xl-4, 6, true )
-
-	}
-
-	if( MENU ){
-
-		fullscreen( ln+=8 )
-
-	}
-}
-
-function title(){
-
-	ui.textbox('special stage',  2, 3 )
-	ui.textbox('-', 2, 6 )
 
 	if( CHALLENGE ){
-		ui.textbox('rival challenge',2,10)
-		ui.textbox('seed ' + SEED, 2,14)
-		ui.textbox('time ' + ui.getTextFloat( OBJECTIVES[3] ),2,16)
+		SEED = parseInt( seed )
 	}
-
-}
-
-function menuButton(){
-
-  	ui.button('menu', function(){
-
-		ui.clear()
-		MENU = !MENU
-		if( !MENU && PLAY ) vehicle.display()
-
-  	}, ui.xl-10, 2, 8, 2, true, false )
-
-}
-
-function results(){
-	let RESULTS = true
-	ui.clear()
-	ui.textbox( vehicle.TEXTTIME, 2, 3 )
-	vehicle.display()
-	ui.textbox( '-', 2, 15 )
-	let ln = 15
-
-	if( vehicle.getReward() > 0 ){
-
-		ui.textbox('new record', 2, ln+=2 )
-		ln+=2
-		ui.textbox( 'reward    Y' + vehicle.getReward(), 2, ln+=2 )
-
-	}
-
-	ui.textbox( 'total     Y' + vehicle.getYen(), 2, ln+=2 )
-
-	 ui.button('next stage', function(){
-
-  		MENU = false
-  		PLAY = false
-		ui.clear()
-		renderer.clear()
-	    title()
-	    vehicle.disconnect()
-	    vehicle.reset()
-		stage.reset()
-		CHALLENGE = false
 		
-  	}, 2, ln += 4, ui.xl-4, 6, true)
-
-	if( PLAY || vhs.PLAY ){
-
-  	ui.button('restart stage', function(){
-
-  		MENU = false
-  		PLAY = true
-		vehicle.reset()
-		ui.clear()
-		RESULTS = false
-
-  	}, 2, ln+=9, ui.xl-4, 6, true )
-
-	if( RESULTS ){
-  	ui.button('view replay', function(){
-
-  		vhs.PLAY = true
-  		PLAY = false
-  		MENU = false
-  		ui.clear()
-
-  	}, 2, ln+=9, ui.xl-4, 6, true)
-
-	if( PLAY ){
-  	ui.button('copy challenge url', function(){
-
-  		encodeURL()
-
-  	}, 2, ln+=9, ui.xl-4, 6, true)
-	}
-	} 
-	}
-
-}
-
-function main(){
-
-	const id = window.requestAnimationFrame( main )
-
-	let time = window.performance.now()
-
-	FPS  = time - TIME
-	TIME = time
-	FPS = Math.round( 100/FPS )*10
-
-  	if( PLAY ){
-
-  		menuButton()
-		vhs.update()
-  		vehicle.update()
-		vehicle.display()
-
-  		ui.textbox( vehicle.TEXTTIME, 2, 3 )
-		ui.textbox( 'fps ' + FPS, 2, ui.yl-4)
-  		ui.textbox( 'vel' + ' ' + vehicle.VELOCITY, 2, ui.yl-6 )
-
-		if( vehicle.END && vehicle.OBJECTIVE == 0 ){
-
-			results()
-
-		}
-		else if( MOBILE && !MENU ){
-
-			ui.dpad()
-
-		}
-		else if( MENU ){
-
-			pause()
-
-		}
-
-  	}
-  	else if( vhs.PLAY ){
-
-  		vhs.update()
-
-  		if( MENU ){
-
-  			results()
-
-  		}
-
-		menuButton()
-
-
-  	}
-  	else if( stage.generate.END === true ){
-  		
-		ui.button( 'ready', function(){
-			vehicle.connect( stage.start, stage.surface )
-			stage.generate.END = false
-			PLAY = true
-			TIMER = 0
-			ui.clear()
-		}, 2, ui.yl-12, ui.xl-4, 6, true )
-  	}
-  	
-	renderer.render( scene, camera )
-
 }

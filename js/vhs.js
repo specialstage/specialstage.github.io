@@ -1,14 +1,14 @@
 function VHS( camera ){
 
-  var scope = this
+  const scope = this
   this.PLAY = false
   this.RECORD = true
 
   this.tape = []
   this.timer = 0
 
-  var frame = 0
-  var capacity = 18000
+  let frame = 0
+  let capacity = 18000
 
   this.capture = function(v){
 
@@ -40,6 +40,20 @@ function VHS( camera ){
   }
 
   this.play = function( vehicle ){
+
+	if( this.RECORD ){
+
+		this.RECORD = false
+		frame = 0
+		TIMEOUT = 0
+		
+	}
+
+	if( frame === 0 ){
+
+		stage.generate.resetCheckpoints()
+
+	}
 
     vehicle.position.copy( this.tape[frame].position )
     vehicle.mesh.position.copy( vehicle.position )
@@ -90,22 +104,18 @@ function VHS( camera ){
     
   }
 
-  this.update = function(){
+  this.export = function(){
+  	
+	let output = ''
+  	for( let i = 0; i < scope.tape.length; i++ ){
 
-    if( this.PLAY ){
-      if( this.RECORD ){
-      	frame = 0
-      	this.RECORD = false
+  		let position = scope.tape[i].position.x + ' ' + scope.tape[i].position.y + ' ' + scope.tape[i].position.z
+  		output += position
+  		output += '/n'
 
-      }
-      if( frame === 0 ){
-		stage.generate.resetCheckpoints()
-      }
-      this.play( vehicle )
-    }
-    else if( this.RECORD ){
-      this.record( vehicle )
-    }
+  	}
+
+  	return output
 
   }
 

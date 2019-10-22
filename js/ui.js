@@ -149,21 +149,15 @@ function UI(){
 //     if( UPDATE ){
 //     context.clearRect( x, y-size, size * w + size, size * h )
 //     }
-    
-    for( let i in label ){
-      context.drawImage(
-        sheet,
-        lookup[label.charAt(i)].x,
-        lookup[label.charAt(i)].y,
-        size,
-        size,
-        Math.floor(w*size/2) + ( x+i*size ) - Math.floor(width/2) + size/2,
-        y+(h*size)/2,
-        size,
-        size )
-    }
 
 	if( OUTLINE ){
+// 	context.clearRect( x, y, w*size, h*size+size )
+// 	context.save()
+// 	context.fillStyle = '#101010'
+// 	context.globalAlpha = 0.5
+// 	context.fillRect( x, y, w*size, h*size+size)
+// 	context.restore()
+
     context.drawImage(
       sheet,
       0,
@@ -197,7 +191,7 @@ function UI(){
       x,
       y,
       1,
-      size+size*h
+      size+size*h+1
     )
 
     context.drawImage(
@@ -209,10 +203,23 @@ function UI(){
       x+w*size,
       y,
       1,
-      size+size*h
+      size+size*h+1
     )
 	}
     
+    for( let i in label ){
+      context.drawImage(
+        sheet,
+        lookup[label.charAt(i)].x,
+        lookup[label.charAt(i)].y,
+        size,
+        size,
+        Math.floor(w*size/2) + ( x+i*size ) - Math.floor(width/2) + size/2,
+        y+(h*size)/2,
+        size,
+        size )
+    }
+
     context.closePath()
     
     touches = control.touches 
@@ -234,17 +241,17 @@ function UI(){
   
   this.dpad = function(){
 
-  	control.LEFT = false
-	control.UP = false
-  	control.DOWN = false
-  	control.RIGHT = false
+  	control.LEFT 	= false
+	control.UP		= false
+  	control.DOWN 	= false
+  	control.RIGHT 	= false
 
-  	let xl = Math.floor(scope.xl/4)
+  	let xl = Math.floor(scope.xl/3)
 
-    this.button('L', function(){ control.LEFT = true  }, 1, scope.yl-24, xl-1,  8 )
-    this.button('R', function(){ control.RIGHT = true }, xl+1, scope.yl-24, xl-1, 8 )
-    this.button('U', function(){ control.UP = true    }, scope.xl-xl*2, scope.yl-24, xl*2-1, 8 )
-    this.button('D', function(){ control.DOWN = true  }, scope.xl-xl*2, scope.yl-14, xl*2-1, 8 )
+    this.button('L', function(){ control.LEFT = true  }, 1, scope.yl-24, xl-1,  8, false )
+    this.button('R', function(){ control.RIGHT = true }, xl+1, scope.yl-24, xl-1, 8, false )
+    this.button('U', function(){ control.UP = true    }, xl*2+1, scope.yl-24, xl-1, 8, false )
+    this.button('D', function(){ control.DOWN = true  }, xl*2+1, scope.yl-14, xl-1, 8, false )
     
   }
 

@@ -334,6 +334,7 @@ function Vehicle(){
 
 			objective = 0
 			this.END = true
+			MENU = true
 
 		  }
 		  else{
@@ -373,7 +374,6 @@ function Vehicle(){
 
 		DNF = false
 		stage.generate.resetCheckpoints()
-
 		if( this.END && CT.length === 4 && AT < stage.best[3]  ){
 
 		for( let i = 0; i < stage.best.length; i++)

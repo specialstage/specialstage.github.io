@@ -1,3 +1,26 @@
+October 21, 2019
+
+	Added stars
+	Fixed seed initialzation
+	Saved 0.0.09
+
+	Full review and revision
+	Added state.js
+	
+October 18, 2019
+
+	Added seed url decoding.
+
+		Stage seed can now be set by
+		adding a # followed by the seed
+		name. example:
+
+		https://specialstage.io#seedname
+
+October 17, 2019
+
+	Added seeded stage random numbers
+
 October 16, 2019
 
 	Added replay system ( VHS )
@@ -28,7 +51,6 @@ September 22, 2019
 	Added background mesh
 	Added currency
 
--
 September 18, 2019
 
 	Testing Buffer overlap detection instead of predective detection

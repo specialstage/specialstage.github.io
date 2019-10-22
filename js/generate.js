@@ -166,10 +166,9 @@ function Generate(){
 		scene.add( background )
 
 		ui.clear()
-		ui.textbox('generating stage please wait...', 2, 3)
-		if( !MOBILE ) ui.textbox('keyboard controls - arrow keys', 2, ui.yl-4 )
 		loadtime = window.performance.now()
-		interval = window.setInterval( this.generate, 16 )
+		window.setTimeout( scope.generate, 0 )
+		ui.textbox( 'generating path...', 2,4 )
 
 	}
 
@@ -200,7 +199,7 @@ function Generate(){
 
 	this.complete = function(){
 
-		scope.terrain()
+// 		scope.terrain()
 
 		collision.geometry.mergeVertices()
 		collision.geometry.verticesNeedUpdate = true
@@ -210,7 +209,7 @@ function Generate(){
 
 		scope.checkpoints = scope.checkpoint()
 
-		for( let i in this.checkpoints ){
+		for( let i in scope.checkpoints ){
 
 			scene.add( scope.checkpoints[i].display )
 
@@ -246,8 +245,10 @@ function Generate(){
 		stage.start   = scope.start.clone()
 		loadtime = loadtime - window.performance.now()
 		console.log( 'Load Time: ' + loadtime/1000 )
-		ui.textbox( '-', 2, 5)
-		ui.textbox('target times', 2, 9)
+		ui.clear()
+		ui.textbox('stage generation complete.',2,4)
+		ui.textbox( '-', 2, 6)
+		ui.textbox('target times', 2, 8)
 
 		for( let i = 0; i < stage.best.length; i++ ){
 
@@ -263,9 +264,12 @@ function Generate(){
 
 			text += cp
 
-			ui.textbox( text , 2, 13+i*2 )
+			ui.textbox( text , 2, 12+i*2 )
 
 		}
+
+			END = true
+			scope.END = true
 
 	}
 
@@ -358,7 +362,7 @@ function Generate(){
 
 	this.generate = function(){
 
-		if( !PATH ){
+		while( !PATH ){
 			
 			scope.path()
 
@@ -367,31 +371,26 @@ function Generate(){
 			nodes.geometry.computeBoundingSphere()
 			nodes.geometry.center()
 
-		if( nodes.geometry.vertices.length > 0 ){
-					translate.copy( nodes.geometry.vertices[0] )
-					translate.sub( nodesBuffer.vertices[0] )
-		}
-			renderer.render(scene, camera)
-
-		}
-		else if( PATH && !IMPORT ){
+			if( nodes.geometry.vertices.length > 0 ){
+						translate.copy( nodes.geometry.vertices[0] )
+						translate.sub( nodesBuffer.vertices[0] )
+			}
 			
-			window.clearInterval( interval )
+		}
+		if( PATH && !IMPORT ){
+			
 			scope.reset()
 			collision.geometry.elementsNeedUpdate = true
+			window.setTimeout( scope.import, 16 )
+			ui.textbox( 'importing path...', 2,4 )
 
-			interval = window.setInterval( scope.import, 16 )
-			
 		}
 
 	}
 
 	this.import = function(){
 
-		let dt = 0
-		let time = window.performance.now()
-
-		while( dt < 16 && !IMPORT ){
+		while( !IMPORT ){
 
 		if( iterator <= instructions.length ){
 			
@@ -430,27 +429,21 @@ function Generate(){
 			surface.geometry = surfaceBuffer.clone()
 			surface.geometry.computeBoundingSphere()
 
-			renderer.render(scene, camera)
-
 			iterator++
 
 		}
 
-		dt = window.performance.now() - time
-
 		if( iterator > 0 && iterator >= instructions.length ){
 
 			ui.clear()
-			ui.textbox('stage generation complete.', 2, 3)
+			ui.textbox('generating terrain...', 2, 4)
 
-			scope.complete()
+			window.setTimeout( scope.terrain, 16 )
 
 			IMPORT = true
-			END = true
-			scope.END = true
-			
-			window.clearInterval( interval )
-			
+// 			END = true
+// 			scope.END = true
+						
 		}
 
 		}
@@ -582,7 +575,6 @@ function Generate(){
 		direction.copy(a).sub( extruder.position )
 		extruder.position.add(direction)
 
-// 		slope = -slope
 		angle = 0
 
 		renderer.render(scene,camera)
@@ -591,10 +583,7 @@ function Generate(){
 
 	this.path = function(){
 
-		let dt = 0
-		let time = window.performance.now()
-
-		while( dt < 16 && !PATH ){
+		while( !PATH ){
 
 		let decisions = []
 		framecount ++
@@ -614,7 +603,6 @@ function Generate(){
 			extruder.geometry.dispose()
 			extruder.geometry = parameter.extruder.clone()
 			extruder.position.copy( parameter.location )
-			renderer.render(scene, camera)
 
 			turn = !parameter.turn
 			sign = parameter.sign
@@ -716,8 +704,6 @@ function Generate(){
 		}
 
 		nodesBuffer.verticesNeedUpdate = true
-		dt = window.performance.now()-time
-		timer += dt
 
 		if( position >= section_end ){
 			PATH = true
@@ -936,7 +922,7 @@ function Generate(){
 	terrain.geometry.computeVertexNormals()
 	terrain.geometry.mergeVertices()
 	terrain.geometry.computeBoundingSphere()
-	this.noise( terrain.geometry )
+	scope.noise( terrain.geometry )
 
 	for( let i = 0; i < terrain.geometry.faces.length; i++ ){
 
@@ -953,8 +939,9 @@ function Generate(){
 
 	}
 
-	this.trees()
+	scope.trees()
 
+	window.setTimeout( scope.complete, 0 )
 	// End Terrain Growth
 	}
 
