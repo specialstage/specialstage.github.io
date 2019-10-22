@@ -15,15 +15,10 @@
 </head>
 
 <body>
-<!-- The core Firebase JS SDK is always required and must be listed first -->
 <script src="https://www.gstatic.com/firebasejs/7.1.0/firebase-app.js"></script>
-
-<!-- TODO: Add SDKs for Firebase products that you want to use
-     https://firebase.google.com/docs/web/setup#available-libraries -->
 <script src="https://www.gstatic.com/firebasejs/7.1.0/firebase-analytics.js"></script>
 
 <script>
-  // Your web app's Firebase configuration
   var firebaseConfig = {
     apiKey: "AIzaSyCTciT1hsYCPT3YX38uuMQtmvAopwIThQY",
     authDomain: "special-stage-1c1b6.firebaseapp.com",
@@ -34,7 +29,6 @@
     appId: "1:1039700651693:web:cff20bfaa222fb63af6024",
     measurementId: "G-TD7J4WXNF0"
   };
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   firebase.analytics();
 </script>
@@ -53,17 +47,8 @@ navigator.serviceWorker.register('serviceworker.js', {scope: '/'})
 <script src="js/generate.js"></script>
 <script src="js/stage.js"></script>
 <script src="js/vhs.js"></script>
+<script src="js/state.js></script>
 <script src="js/main.js"></script>
-
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<!-- <script async src="https://www.googletagmanager.com/gtag/js?id=UA-129727299-2"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-129727299-2');
-</script> -->
 
 </body>
 </html>
