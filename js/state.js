@@ -38,11 +38,12 @@ function State() {
 
 	this.pause = function(){
 
-		let ln = 3
-
+		let ln = 0
+		ui.clear()
+		
 		if( DNF ){
 
-			ui.textbox('dnf', 2, ln+=4)
+			ui.textbox('dnf', 2, ln+=3)
 			ui.textbox('reason        ' + REASON, 2, ln +=2)
 			ui.textbox('repair cost   Y100', 2, ln +=2)
 
@@ -62,10 +63,10 @@ function State() {
 
 		if( MENU ){
 
-			fullscreen( ln+=8 )
+			fullscreen( ln+=9 )
 
 		}
-		
+
 	}
 
 	this.settings = function(){
