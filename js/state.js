@@ -49,7 +49,6 @@ function State() {
 		}
 
 		if( MENU ){
-			ui.clear()
 			ui.button('restart stage', function(){
 
 				MENU = false
@@ -66,7 +65,7 @@ function State() {
 			fullscreen( ln+=8 )
 
 		}
-
+		
 	}
 
 	this.settings = function(){
