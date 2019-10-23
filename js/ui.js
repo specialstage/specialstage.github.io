@@ -247,11 +247,13 @@ function UI(){
   	control.RIGHT 	= false
 
   	let xl = Math.floor(scope.xl/3)
+  	let right = scope.xl-2-xl*2
 
     this.button('L', function(){ control.LEFT = true  }, 1, scope.yl-24, xl-1,  8, false )
     this.button('R', function(){ control.RIGHT = true }, xl+1, scope.yl-24, xl-1, 8, false )
-    this.button('U', function(){ control.UP = true    }, xl*2+1, scope.yl-24, xl-1, 8, false )
-    this.button('D', function(){ control.DOWN = true  }, xl*2+1, scope.yl-14, xl-1, 8, false )
+
+    this.button('U', function(){ control.UP = true    }, xl*2+1, scope.yl-24, right, 8, false )
+    this.button('D', function(){ control.DOWN = true  }, xl*2+1, scope.yl-14, right, 8, false )
     
   }
 
