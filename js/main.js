@@ -140,7 +140,7 @@ function menu(){
 		MENU = !MENU
 		if( !MENU && PLAY ) vehicle.display()
 		menu()
-		state.instruments()
+// 		if( !vhs.PLAY || vehicle.END ) state.instruments()
 
   	}, ui.xl-8, 0, 8, 6, true, false )
 
@@ -160,7 +160,6 @@ function main(){
 		vhs.record( vehicle )
   		vehicle.update()
 		vehicle.display()
-
 		state.instruments()
 
 		if( MOBILE && !MENU ){
@@ -176,6 +175,7 @@ function main(){
 			if( TIMEOUT > 300 ){
 				PLAY = false
 				vhs.PLAY = true
+				ui.clear()
 			}
 
 		}
@@ -185,7 +185,9 @@ function main(){
 
 		}
 
-		menu()
+		if( !DNF ) {
+			menu()
+		}
 
   	}
   	else if( vhs.PLAY ){
@@ -197,8 +199,8 @@ function main(){
   			state.results()
 
   		}
-
-		menu()
+  		
+		if( vhs.PLAY ) menu()
 
   	}
   	else if( stage.generate.END === true ){

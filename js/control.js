@@ -60,6 +60,18 @@ function Control(){
       case('ArrowRight'):
         scope.RIGHT = input
       break
+      case('w'):
+        scope.UP = input
+      break
+      case('s'):
+        scope.DOWN = input
+      break
+      case('a'):
+        scope.LEFT = input
+      break
+      case('d'):
+        scope.RIGHT = input
+      break
       case('r'):
         scope.RESET = input
       break

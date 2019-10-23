@@ -406,6 +406,7 @@ function Vehicle(){
 		REWARD = 0
 
 		TIMEOUT = 0
+		TIMEOUTS = 0
 		CT = []
 		AT = 0
 		MENU = false

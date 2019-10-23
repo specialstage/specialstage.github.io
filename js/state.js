@@ -40,7 +40,7 @@ function State() {
 
 		let ln = 0
 		ui.clear()
-		
+
 		if( DNF ){
 
 			ui.textbox('dnf', 2, ln+=3)
@@ -48,6 +48,7 @@ function State() {
 			ui.textbox('repair cost   Y100', 2, ln +=2)
 
 		}
+		else{ ln += 2 }
 
 		if( MENU ){
 			ui.button('restart stage', function(){
@@ -102,6 +103,7 @@ function State() {
 
 			MENU = false
 			PLAY = false
+			vhs.PLAY = false
 			ui.clear()
 			renderer.clear()
 			title()
@@ -163,9 +165,9 @@ function State() {
 
 	this.instruments = function(){
 
-  		ui.textbox( vehicle.TEXTTIME, 2, 3 )
-		ui.textbox( 'fps ' + FPS, 2, ui.yl-4)
-  		ui.textbox( 'vel' + ' ' + vehicle.VELOCITY, 2, ui.yl-6 )
+  			ui.textbox( vehicle.TEXTTIME, 2, 3 )
+			ui.textbox( 'fps ' + FPS, 2, ui.yl-4)
+			ui.textbox( 'vel' + ' ' + vehicle.VELOCITY, 2, ui.yl-6 )
 
 	}
 

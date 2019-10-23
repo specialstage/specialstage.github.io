@@ -222,15 +222,11 @@ function Generate(){
 
 		const buffer = new THREE.IcosahedronGeometry(1200,4)
 
-// 		scene.remove( stars )
-// 		stars.geometry.dispose()
-// 		stars.geometry.copy( new THREE.Geometry() )
-
 		for( let i in buffer.vertices ){
 
 			let random = scope.random()
 
-			if( random < 0.3 ){
+			if( random < 0.3 && buffer.vertices[i].z > -400 ){
 
 				stars.geometry.vertices.push( buffer.vertices[i].clone() )
 
