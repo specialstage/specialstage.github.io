@@ -23,6 +23,7 @@ function State() {
 		stage.connect()
 		window.cancelAnimationFrame( id )
 		window.requestAnimationFrame( main )
+		firebase.analytics().logEvent('game_start');
 
 	}, 2, ui.yl-12, ui.xl-4, 6, true )
 
@@ -57,6 +58,7 @@ function State() {
 				vehicle.reset()
 				ui.clear()
 				MENU = false
+				firebase.analytics().logEvent('stage_restarted_dnf');
 
 			}, 2, ln+=4, ui.xl-4, 6, true )
 
@@ -124,6 +126,7 @@ function State() {
 			vehicle.reset()
 			ui.clear()
 			display = false
+			firebase.analytics().logEvent('stage_restarted_completed');
 
 		}, 2, ln+=9, ui.xl-4, 6, true )
 
@@ -140,6 +143,7 @@ function State() {
 		if( display ) ui.button('copy challenge url', function(){
 
 			encodeURL()
+			firebase.analytics().logEvent('link_copied');
 
 		}, 2, ln+=9, ui.xl-4, 6, true)
 
@@ -159,6 +163,7 @@ function State() {
 			PLAY = true
 			TIMER = 0
 			ui.clear()
+			firebase.analytics().logEvent('stage_started');
 		}, 2, ui.yl-12, ui.xl-4, 6, true )
 				
 	}

@@ -294,6 +294,7 @@ function Vehicle(){
 					DNF = true
 					REASON = 'out of bounds'
 					YEN -= 100
+					firebase.analytics().logEvent('dnf');
 
 				}
 			}
