@@ -1,4 +1,4 @@
-var APP_PREFIX = 'SpecialStage'     // Identifier for this app (this needs to be consistent across every cache update)
+var APP_PREFIX = 'SpecialStage_'     // Identifier for this app (this needs to be consistent across every cache update)
 var VERSION = Date.now()
 VERSION.toString()              // Version of the off-line cache (change this value everytime you want to update cache)
 var CACHE_NAME = APP_PREFIX + VERSION
@@ -6,10 +6,10 @@ var URLS = [                            // Add URL you want to cache in this lis
   '/',                     // If you have separate JS/CSS files,
   '/index.html'            // add path to those files here
 ]
-
+console.log( CACHE_NAME )
 // Respond with cached resources
 self.addEventListener('fetch', function (e) {
-  console.log('fetch request : ' + e.request.url)
+  //console.log('fetch request : ' + e.request.url)
   e.respondWith(
     caches.match(e.request).then(function (request) {
       if (request) { // if cache is available, respond with cache
