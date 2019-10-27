@@ -328,7 +328,7 @@ function Vehicle(){
 
 			if( AT < stage.best[3]  ){
 
-				REWARD = Math.round( ( stage.best[3]-AT ) *10 )				
+				REWARD = Math.round( ( stage.best[3]-AT ) * 10 )				
 
 			}
 			YEN += REWARD
@@ -336,7 +336,7 @@ function Vehicle(){
 			objective = 0
 			this.END = true
 			MENU = true
-
+			firebase.logEvent('stage_completed')
 		  }
 		  else{
 			this.check = true
