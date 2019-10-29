@@ -336,7 +336,7 @@ function Vehicle(){
 			objective = 0
 			this.END = true
 			MENU = true
-			firebase.logEvent('stage_completed')
+			firebase.analytics().logEvent('stage_completed')
 		  }
 		  else{
 			this.check = true
