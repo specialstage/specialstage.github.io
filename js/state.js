@@ -58,7 +58,7 @@ function State() {
 				vehicle.reset()
 				ui.clear()
 				MENU = false
-				firebase.analytics().logEvent('stage_restart_dnf');
+				firebase.analytics().logEvent('stage_restart', { status: 'dnf' });
 
 			}, 2, ln+=4, ui.xl-4, 6, true )
 
@@ -126,7 +126,7 @@ function State() {
 			vehicle.reset()
 			ui.clear()
 			display = false
-			firebase.analytics().logEvent('stage_restart_complete');
+			firebase.analytics().logEvent('stage_restart', { status: 'complete' });
 
 		}, 2, ln+=9, ui.xl-4, 6, true )
 

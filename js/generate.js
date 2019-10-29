@@ -239,9 +239,9 @@ function Generate(){
 
 		stage.surface = collision.clone()
 		stage.start   = scope.start.clone()
-		loadtime = loadtime - window.performance.now()
+		loadtime = window.performance.now()-loadtime
 		console.log( 'Load Time: ' + loadtime/1000 )
-		firebase.analytics().logEvent('stage_generation_complete', { time: loadtime/1000 } )
+		firebase.analytics().logEvent('stage_generation_complete', { time: Math.round(loadtime/1000) } )
 		
 		ui.clear()
 		ui.textbox('stage generation complete.',2,4)
