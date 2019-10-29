@@ -141,7 +141,7 @@ function Generate(){
 	let interval = 0
 
 	const raycaster = new THREE.Raycaster()
-	raycaster.far = 1000
+	raycaster.far = 800
 	
 	this.END = false
 	this.IMPORT = false
@@ -241,6 +241,7 @@ function Generate(){
 		stage.start   = scope.start.clone()
 		loadtime = loadtime - window.performance.now()
 		console.log( 'Load Time: ' + loadtime/1000 )
+		firebase.analytics().logEvent('stage_generation_complete', loadtime/1000 )
 		ui.clear()
 		ui.textbox('stage generation complete.',2,4)
 		ui.textbox( '-', 2, 6)
@@ -366,7 +367,7 @@ function Generate(){
 			nodes.geometry = nodesBuffer.clone()
 			nodes.geometry.computeBoundingSphere()
 			nodes.geometry.center()
-
+			renderer.render(scene, camera)
 			if( nodes.geometry.vertices.length > 0 ){
 						translate.copy( nodes.geometry.vertices[0] )
 						translate.sub( nodesBuffer.vertices[0] )
@@ -676,12 +677,13 @@ function Generate(){
 			this.extrude()
 
 			for( let j = 0; j < nodesBuffer.vertices.length; j++ ){
-
-				let distance = nodesBuffer.vertices[position-1].distanceTo( nodesBuffer.vertices[j] )
-				let factor   = Math.abs( (position-1) - j )*0.065
-				if ( factor > 20 ) factor = 20
-
-				if( distance < 10*factor && Math.abs( ( position-1 ) - j ) > 8 ){
+				let d1 = new THREE.Vector2( nodesBuffer.vertices[position-1].x, nodesBuffer.vertices[position-1].y )
+				let d2 = new THREE.Vector2( nodesBuffer.vertices[j].x, nodesBuffer.vertices[j].y )
+				let distance = d1.distanceTo(d2) 
+// 				let factor   = Math.abs( (position-1) - j )*0.065
+// 				if ( factor > 20 ) factor = 20
+				let factor = 20
+				if( distance < factor && Math.abs( ( position-1 ) - j ) > 15 ){
 
 				backtrack = true
 
@@ -754,7 +756,7 @@ function Generate(){
 
 	// Begin Mesh Growth
 
-	for( let i = 0; i < 5; i++ ){
+	for( let i = 0; i < 1; i++ ){
 	console.log('Terrain Level ' + i + ' / ' + 5)
 
 		terrain.geometry.verticesNeedUpdate = true

@@ -58,7 +58,7 @@ function State() {
 				vehicle.reset()
 				ui.clear()
 				MENU = false
-				firebase.analytics().logEvent('stage_restarted_dnf');
+				firebase.analytics().logEvent('stage_restart_dnf');
 
 			}, 2, ln+=4, ui.xl-4, 6, true )
 
@@ -114,7 +114,7 @@ function State() {
 			stage.reset()
 			RESULTS = false
 			CHALLENGE = false
-
+			firebase.analytics().logEvent('next_stage')
 		}, 2, ln += 4, ui.xl-4, 6, true)
 
 		if( PLAY || vhs.PLAY ){
@@ -126,7 +126,7 @@ function State() {
 			vehicle.reset()
 			ui.clear()
 			display = false
-			firebase.analytics().logEvent('stage_restarted_completed');
+			firebase.analytics().logEvent('stage_restart_complete');
 
 		}, 2, ln+=9, ui.xl-4, 6, true )
 
@@ -143,7 +143,7 @@ function State() {
 		if( display ) ui.button('copy challenge url', function(){
 
 			encodeURL()
-			firebase.analytics().logEvent('link_copied');
+			firebase.analytics().logEvent('url_challenge_created');
 
 		}, 2, ln+=9, ui.xl-4, 6, true)
 
@@ -163,7 +163,7 @@ function State() {
 			PLAY = true
 			TIMER = 0
 			ui.clear()
-			firebase.analytics().logEvent('stage_started');
+			firebase.analytics().logEvent('stage_start');
 		}, 2, ui.yl-12, ui.xl-4, 6, true )
 				
 	}
