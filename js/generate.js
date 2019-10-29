@@ -241,7 +241,8 @@ function Generate(){
 		stage.start   = scope.start.clone()
 		loadtime = loadtime - window.performance.now()
 		console.log( 'Load Time: ' + loadtime/1000 )
-		firebase.analytics().logEvent('stage_generation_complete', loadtime/1000 )
+		firebase.analytics().logEvent('stage_generation_complete', { time: loadtime/1000 } )
+		
 		ui.clear()
 		ui.textbox('stage generation complete.',2,4)
 		ui.textbox( '-', 2, 6)
@@ -756,7 +757,7 @@ function Generate(){
 
 	// Begin Mesh Growth
 
-	for( let i = 0; i < 1; i++ ){
+	for( let i = 0; i < 4; i++ ){
 	console.log('Terrain Level ' + i + ' / ' + 5)
 
 		terrain.geometry.verticesNeedUpdate = true
