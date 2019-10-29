@@ -336,7 +336,7 @@ function Vehicle(){
 			objective = 0
 			this.END = true
 			MENU = true
-			firebase.analytics().logEvent('stage_complete')
+			firebase.analytics().logEvent('stage_complete', { time: AT, distance: stage.generate.DISTANCE, rating: Math.round( stage.generate.DISTANCE/time ) } )
 		  }
 		  else{
 			this.check = true

@@ -145,6 +145,7 @@ function Generate(){
 	
 	this.END = false
 	this.IMPORT = false
+	this.DISTANCE = 0
 
 	extruder.geometry.vertices[0] = direction.clone()
 	extruder.geometry.vertices[1] = up.clone().add(direction)
@@ -1061,6 +1062,8 @@ function Generate(){
 		array[3] = checkpoint(geometry.vertices[i*3+offset],geometry.vertices[i*3+1+offset], 3)
 		array[4] = checkpoint(geometry.vertices[i*4+offset],geometry.vertices[i*4+1+offset], 4)
 
+		this.DISTANCE = ( (i*4)/2 )*3
+		
 		scope.start.copy(geometry.vertices[offset-1])
 		scope.start.sub(geometry.vertices[offset-1+1])
 		scope.start.multiplyScalar(-0.75)
