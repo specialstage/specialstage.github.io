@@ -1,5 +1,7 @@
 # ***Special Stage is an experimental lo-fi procedural roguelike arcade racing game that draws inspiration from the touge, rally, futuristic, and kart racing genres.***
 
+***Help support the development of Special Stage by Sponsoring this repository or by visiting patreon.com/specialstage***
+
 #### Design Objectives
 
 - Create a fundemental racing experience that is fun and skill developing.
