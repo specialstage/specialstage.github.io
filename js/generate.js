@@ -1,50 +1,123 @@
+/*
+
+Generate handles the procedural generation of stages.
+The Generation process is broken down into the following steps:
+
+Path Generation ( Currently broken, but usable )
+
+	A non intersecting path is generated using the extruder object and this.extrusion.
+
+	The extruder is aligned and stepped forward.
+
+	The position of the extruder is checked against previously generated vertices using a weighted distance.
+
+	If the distance of the generated vertices is below the defined threshold the path is backtracked to the last state.
+
+	**This is essentially a depth first search using levy flights.
+	**Instead of checking for occupied cells, a weighted distance is used.
+	**This helps avoid intersections and dead end states.
+
+	The generated path is represented in a set of discrete instructions describing the angle and slope of the next path step.
+
+Path Importing
+
+	Once a valid path has been generated, the path geometry is generated
+	during this.import
+
+	The Path Segments and Perimeter are drawn out using the world position of the extruder lane vectors.
+
+	A surface mesh is drawn using the segments as a reference.
+
+Terrain Generation
+
+	**Currently this is the heaviest process, as it involves heavy checking.
+
+	**Currently incompleted. Requires more edge solving.
+	
+	Using the segments as an initial reference, a list of open edges is created with extrusion targets generated outward from the path.
+
+	The target raycasts against the terrain mesh in progress to insure there are no intersecting faces.
+
+		If the target intersects a previously generated face it is ignored.
+
+			** Will add recursive angle checking and a stitching algorithm to fill seems
+
+		Else The first half of a quad strip is generated
+
+	The distance between the previously generated vertices and target vertices is checked.
+
+		If below the defined threshold, the vertices merge.
+
+		Else the second half of the quad strip is generated.
+
+	This process is repeated to continuously grow a solid geometry out from the path.
+
+	Once the mesh growth process is complete noise is applied to the generated mesh.
+
+Feature Generation
+
+	Any additional features like decorations and interactable objects will be generated
+	based on vertex normals and path sections.
+
+	Trees
+
+		Each terrain vertex normal is checked for verticality.
+
+		If the vertex normal and noise value are within the thresholds defined a tree is generated.
+
+Complete Process
+
+	Once the generation process is complete a quick clean up is performed.
+	The generator comunicates to the engine that the stage is ready.
+
+*/
+
 function Generate(){
 
 	scope = this
 
 	this.SEED = 0
-	let iterator  = 0
+	let STEPS  = 4 // Total extrusion steps for terrain generation.
 
-// 	const mesh = new THREE.Line( new THREE.Geometry() )
-// 	mesh.name = 'Generative Mesh'
-
-// 	const buffer = new THREE.Line( new THREE.Geometry() )
-// 	buffer.name = 'Generative Buffer'
-
+	// Stores path nodes representing each step in the path generation.
+	// Generated in this.path() using this.extrude().
 	const nodes = new THREE.Line( new THREE.Geometry() )
 	nodes.name = 'Generative Nodes'
 	nodes.visible = false
 	nodes.material.color = palette[4]
 	nodes.material.name = 'Node Material'
 
+	// Reference object used to create new path segments() in this.extrude().
 	const extruder = new THREE.Points( new THREE.Geometry() )
 	extruder.name = 'Generative Extruder'
 	extruder.visible = false
 
+	// Path surface used for collision detection.
+	// Generated in this.import with this.extrude().
 	const surface = new THREE.Mesh( new THREE.Geometry() )
 	surface.name = 'Generative Surface'
 	surface.visible = false
 	surface.material.color = palette[0]
 	surface.material.name = 'Surface Material'
 
+	// Path perimeter used for rendering and reference for generating.
+	// Generated in this.import() with this.extrude().
 	const perimeter = new THREE.LineSegments( new THREE.Geometry() )
 	perimeter.name = 'Generative Perimeter'
 	perimeter.material.color = palette[1]
 	perimeter.material.name  = 'Perimeter Material'
 
+	// Segments dividing each path step.
+	// Used for rendering and as a reference for generating.
+	// Generated in this.import() with this.extrude().
 	const segments  = new THREE.LineSegments( new THREE.Geometry() )
 	segments.name = 'Generative Segments'
 	segments.visible = true
 	segments.material.color = palette[3]
 	segments.material.name = 'Segments Material'
 
-	const collision = new THREE.Mesh( new THREE.Geometry() )
-	collision.name = 'Collision Mesh'
-	collision.visible = true
-	collision.material.color = palette[3]
-	collision.material.name = 'Collision Material'
-	collision.material.side = THREE.BackSide
-
+	// Terrain mesh object used for rendering and collisions.
+	// Generated using this.terrain().
 	const terrain = new THREE.Mesh( new THREE.Geometry(),
 					new THREE.MeshBasicMaterial( {vertexColors: THREE.VertexColors} ) )
 	terrain.name = 'Terrain'
@@ -53,12 +126,16 @@ function Generate(){
 	terrain.material.side = THREE.DoubleSide
 	terrain.visible = true
 
+	// Tree container.
+	// Generated using this.trees().
 	const trees = new THREE.LineSegments( new THREE.Geometry() )
 	trees.name = 'Trees'
 	trees.material.color = palette[9]
 
+	// Object used to render background behind wireframes.
+	// Helps reduce the visual noise of layered wireframe lines.
 	const background = new THREE.Mesh( new THREE.Geometry(), new THREE.MeshBasicMaterial() )
-	background.name = 'Generative Background'
+	background.name = 'Background'
 	background.material.color = palette[0]
 	background.material.name = 'Background Material'
 	background.material.wireframe = false
@@ -68,15 +145,23 @@ function Generate(){
 	background.material.blendMode = THREE.MultiplyBlending
 	background.material.transparent = true
 
+	// The night sky used for rendering.
 	const stars = new THREE.Points( new THREE.Geometry() )
 	stars.material.color = palette[1]
 	stars.material.sizeAttenuation = false
 	stars.material.size = 1.5
 	stars.material.fog = false
 
-	let edges = []
-	this.targets = []
+	// Collision mesh container.
+	// As new collision objects are generated they are added.
+	const collision = new THREE.Mesh( new THREE.Geometry() )
+	collision.name = 'Collision Mesh'
+	collision.visible = true
+	collision.material.color = palette[3]
+	collision.material.name = 'Collision Material'
+	collision.material.side = THREE.BackSide
 
+	// Container for generated checkpoints
 	this.checkpoints = []
 
 	const direction = new THREE.Vector3( 0, 3, 0 )
@@ -88,71 +173,89 @@ function Generate(){
 	const segmentsBuffer  = segments.geometry.clone()
 	const perimeterBuffer = perimeter.geometry.clone()
 
+	// Used to store lane width values and extrusion targets.
 	const lane = []
-	const lane_normal = []
-	lastNormal = new THREE.Vector3()
+	const laneNormal = []
+	const lastNormal = new THREE.Vector3()
 
+	// Initial lane  parameters values
 	lane[0] = new THREE.Vector3(  4, 3, 0 )
 	lane[1] = new THREE.Vector3( -4, 3, 0 )
 
-	lane_normal[0] = lane[0].clone()
-	lane_normal.z += 1
+	laneNormal[0] = lane[0].clone()
+	laneNormal.z += 1
 
-	lane_normal[1] = lane[1].clone()
-	lane_normal.z += 1
+	laneNormal[1] = lane[1].clone()
+	laneNormal.z += 1
 
+	// Parameters for Path Generation
+	let up = new THREE.Vector3( 0, 0, 1 )
 	let slope	  = 0
 	let angle	  = 0
 	let slope_sum = 0
 	let angle_sum = 0
 
+	// Angle grid used for stepping angle and slope
+	// Used in this.path and this.extrude
 	const slope_step = Math.PI/64
 	const angle_step = Math.PI/32
 
+	// If the path is in a turn state, and the side it is turning.
+	let turn = true
+	let sign = -1
+
+	// Current position in generation and total length of the path.
+	// Length actually varies depending on the last section generated.
 	let position = 0
-	let length = 666
+	let length = 100
+
+	// Used to store information for a section generated
 	let section = 0
 	let section_angle = 0
 	let section_slope = 0
 	let section_start = 50
 	let section_end = 9999
 
-	let up = new THREE.Vector3( 0, 0, 1 )
-
+	// Used to store backtracking information
 	let backtrack = false
 	let history = []
+
+	// Used to store generated path extrusion instructions
 	let instructions = []
 	let timer   = 0
 	let framecount = 0
 	let timeout = 50000
 	let loadtime = 0
-	let turn = true
-	let sign = -1
 
+	// The translation to center the stage and the start position.
 	let translate = new THREE.Vector3()
 	this.start	= new THREE.Vector3()
+
+	// Booleans used to communicate generation status.
 
 	let END			= false
 	let PATH		= false
 	let GENERATE	= false
 	let IMPORT		= false
-	let HEURISTIC	= ( 36 )/2
 
-	let interval = 0
-
-	const raycaster = new THREE.Raycaster()
-	raycaster.far = 800
-	
 	this.END = false
 	this.IMPORT = false
 	this.DISTANCE = 0
+
+	// Heuristic used to generate intial stage challenge times
+	let HEURISTIC	= 18
+
+	const raycaster = new THREE.Raycaster()
+	raycaster.far = 800
+
+	// Initial Extruder settings
 
 	extruder.geometry.vertices[0] = direction.clone()
 	extruder.geometry.vertices[1] = up.clone().add(direction)
 	extruder.geometry.vertices[2] = lane[0].clone()
 	extruder.geometry.vertices[3] = lane[1].clone()
-	extruder.geometry.vertices[4] = lane_normal[0].clone()
-	extruder.geometry.vertices[5] = lane_normal[1].clone()
+	extruder.geometry.vertices[4] = laneNormal[0].clone()
+	extruder.geometry.vertices[5] = laneNormal[1].clone()
 
 	this.connect = function(){
 
@@ -199,8 +302,6 @@ function Generate(){
 	}
 
 	this.complete = function(){
-
-// 		scope.terrain()
 
 		collision.geometry.mergeVertices()
 		collision.geometry.verticesNeedUpdate = true
@@ -352,8 +453,8 @@ function Generate(){
 		extruder.geometry.vertices[1] = up.clone().add(direction)
 		extruder.geometry.vertices[2] = lane[0].clone()
 		extruder.geometry.vertices[3] = lane[1].clone()
-		extruder.geometry.vertices[4] = lane_normal[0].clone()
-		extruder.geometry.vertices[5] = lane_normal[1].clone()
+		extruder.geometry.vertices[4] = laneNormal[0].clone()
+		extruder.geometry.vertices[5] = laneNormal[1].clone()
 
 		extruder.geometry.verticesNeedUpdate = true
 
@@ -369,7 +470,7 @@ function Generate(){
 			nodes.geometry = nodesBuffer.clone()
 			nodes.geometry.computeBoundingSphere()
 			nodes.geometry.center()
-			renderer.render(scene, camera)
+			nodes.updateMatrix()
 			if( nodes.geometry.vertices.length > 0 ){
 						translate.copy( nodes.geometry.vertices[0] )
 						translate.sub( nodesBuffer.vertices[0] )
@@ -483,8 +584,6 @@ function Generate(){
 		normal.applyMatrix4( extruder.matrix )
 		normal.sub(a)
 
-// 		normal.multiplyScalar(0.25)
-
 		if( PATH ){
 
 			b.add( translate )
@@ -562,7 +661,7 @@ function Generate(){
 			segmentsBuffer.vertices.push( b.clone() )
 			segmentsBuffer.vertices.push( c.clone() )
 
-			lastNormal = normal.clone()
+			lastNormal.copy( normal )
 		}
 
 		else{
@@ -584,6 +683,8 @@ function Generate(){
 
 		while( !PATH ){
 
+		
+		
 		let decisions = []
 		framecount ++
 		if( backtrack && history.length > 1 ){
@@ -682,9 +783,8 @@ function Generate(){
 				let d1 = new THREE.Vector2( nodesBuffer.vertices[position-1].x, nodesBuffer.vertices[position-1].y )
 				let d2 = new THREE.Vector2( nodesBuffer.vertices[j].x, nodesBuffer.vertices[j].y )
 				let distance = d1.distanceTo(d2) 
-// 				let factor   = Math.abs( (position-1) - j )*0.065
-// 				if ( factor > 20 ) factor = 20
-				let factor = 20
+				let factor   = Math.abs( (position-1) - j )*0.065
+				if ( factor > 20 ) factor = 20
 				if( distance < factor && Math.abs( ( position-1 ) - j ) > 15 ){
 
 				backtrack = true
@@ -698,7 +798,6 @@ function Generate(){
 	// 			ui.clear()
 	// 			ui.textbox('re-attemping path generation',2, 4)
 				timer = 0
-				TIMEOUTS ++
 			}
 		
 		}
@@ -713,19 +812,17 @@ function Generate(){
 
 	}
 
-	this.terrain = function(){
+this.terrain = function(){
 
 	// Needed
 	terrain.geometry.dispose()
 	terrain.geometry.copy( new THREE.Geometry() )
 
-	let index = 0
-	let buffer   = []
-	let vertices = []
-	let target   = []
+	let buffer   = [] // List buffer vertices by index.
+	let vertices = [] // List of active vertices.
+	let target   = [] // List of extrusion targets.
 
-	//Initialize Targets
-
+	// Edges are split into two sides for easier referencing.
 	for( let s = 0; s < 2; s++ ){
 
 		target[s] = []
@@ -734,6 +831,7 @@ function Generate(){
 
 	}
 
+	// Create initial list of edge vertices by using the previously generated segments geometry.
 	for( let v = 0; v < segments.geometry.vertices.length; v++ ){
 
 		let s = v%2
@@ -741,6 +839,7 @@ function Generate(){
 
 	}
 
+	// Create initial extrusion targets by mirroring the shared edge vertices in the same segment.
 	for( let s = 0; s < 2; s++ ){
 	for( let i = 0; i < vertices[s].length; i++ ){
 
@@ -756,10 +855,11 @@ function Generate(){
 	}
 	}
 
-	// Begin Mesh Growth
+	// Begin mesh growth. STEPS is how many extrusion steps away from the path.
+	// As STEPS increases, the generation time increases exponetioally...
+	for( let i = 0; i < STEPS; i++ ){
 
-	for( let i = 0; i < 4; i++ ){
-	console.log('Terrain Level ' + i + ' / ' + 5)
+		console.log('Terrain Level ' + i + ' / ' + 5)
 
 		terrain.geometry.verticesNeedUpdate = true
 		terrain.geometry.elementsNeedUpdate = true
@@ -767,10 +867,10 @@ function Generate(){
 		terrain.geometry.computeFaceNormals()
 		terrain.updateMatrixWorld()
 
-// 		const partition = stage.spatialPartition( terrain )
-
+	// Iterate through each side
 	for( let s = 0; s < 2; s++ ){
-			
+		
+		// Copy buffer to active edge vertices
 		if( i > 0 ){
 
 			vertices[s] = []
@@ -783,26 +883,28 @@ function Generate(){
 
 		}
 
+		// Carry over extrusion targets from previous iteration.
 		target[s] = Array.from( target[s] )
+		// Clear the buffer.
 		buffer[s] = []
 
-		vertices[s].length
-
+		// Iterate through active edge vertices
 		for( let v = 0; v < vertices[s].length; v++ ){
 
-			target[s][v].z -= i/5
+			target[s][v].z -= i/5 // Apply a slight slope away from the path.
 
-			let flag = false
-			let ignore = false
+			let flag = false // flag intersecting vertices
 
+			// Skip face generation if vertices is undefined.
 			if( vertices[s][v] !== undefined && vertices[s][v-1] !== undefined ){
 
+				// Ignore undefined targets as they previously intersected the terrain.
 				if( target[s][v] === undefined ){
 
 					target[s][v] = target[s][v-1].clone()
 
 				}
-
+				// Pre-check if the target will intersect the existing terrain geometry.
 				else{
 
 					terrain.geometry.computeBoundingSphere()
@@ -814,7 +916,7 @@ function Generate(){
 
 					location.z += 100
 
-					let intersects = raycaster.intersectObjects( [ terrain ], true )
+					let intersects = raycaster.intersectObjects( [ terrain, collision ], true )
 
 					if( intersects.length > 0 ){
 
@@ -822,8 +924,8 @@ function Generate(){
 
 							if( intersects[intersect].point.distanceTo( location ) > 0.01 ){
 
-							buffer[s][v] = undefined
-							flag = true
+							buffer[s][v] = undefined // Ignore vertices with intersecting targets
+							flags		 = true		 // flag intersecting target 
 
 							}
 
@@ -832,7 +934,7 @@ function Generate(){
 					}
 
 				}
-
+				// Push a new face for the first half of a quadstrip if target does not intersect terrain geometry.
 				if( !flag ){
 
 					terrain.geometry.vertices.push( vertices[s][v].clone() )
@@ -857,65 +959,58 @@ function Generate(){
 						}
 
 					}
+				// End first quadstrip face creation.
 				}
+			// End vertices type checking.	
 			}
 
 		}
 
+		// Iterate through edge buffer to pre-validate edge distances.
 		for( let v = 1; v < buffer[s].length; v++ ){
 
+			// Ignore undefined buffer vertices as they have previously had intersecting targets 
 			if( buffer[s][v] !== undefined && buffer[s][v-1] !== undefined ){
 
 				let a = terrain.geometry.vertices[ buffer[s][v] ]
 				let b = terrain.geometry.vertices[ buffer[s][v-1] ]
-
+				
+				// Decimate buffer edge by merging vertices and ignore the second quadstrip face.
 				if ( a.distanceTo(b) < 2.8 ){
 
 					a.copy(b)
 					buffer[s][v] = buffer[s][v-1]
 					target[s][v].copy( target[s][v-1] )
-	// 				target[s][v] = undefined
-	// 				buffer[s][v] = buffer[s][v-1]
-	// 					target[s].slice( v-1, 1 )
-	// 					buffer[s].slice( v-1, 1 )
 
 				}
+				// Else add a new vertices and push a new face to fill the quadstrip.
 				else if ( v > 1 ){
 
 					terrain.geometry.vertices.push( vertices[s][v-1] )
 
-					if( s === 0 ){
+					let a = ( s === 0 ) ? buffer[s][v  ] : buffer[s][v-1]
+					let b = ( s === 0 ) ? buffer[s][v-1] : buffer[s][v  ]
 
 					terrain.geometry.faces.push(
 
-						new THREE.Face3( buffer[s][v], buffer[s][v-1], terrain.geometry.vertices.length-1 )
+						new THREE.Face3( a, b, terrain.geometry.vertices.length-1 )
 
 					)
-
-					}
-					else{
-
-					terrain.geometry.faces.push(
-
-						new THREE.Face3( buffer[s][v-1], buffer[s][v], terrain.geometry.vertices.length-1 )
-
-					)
-
-					}
 
 					terrain.geometry.elementsNeedUpdate = true
-
+				//End face fill.
 				}
+			// End buffer type check.	
 			}
-
+		// End buffer checking iteration.
 		}
-	// End Side Checks
+	// End side iteration.
 	}
 
-	// End Iterations
+	// End mesh growth.
 	}
 
-	console.log('Apply Noise')
+	// Signal terrain geometry updates.
 	terrain.geometry.verticesNeedUpdate = true
 	terrain.geometry.elementsNeedUpdate = true
 	terrain.geometry.computeFaceNormals()
@@ -924,6 +1019,7 @@ function Generate(){
 	terrain.geometry.computeBoundingSphere()
 	scope.noise( terrain.geometry )
 
+	// Copy terrain faces to collision mesh.
 	for( let i = 0; i < terrain.geometry.faces.length; i++ ){
 
 		let a = terrain.geometry.vertices[ terrain.geometry.faces[i].a ].clone()
@@ -939,9 +1035,10 @@ function Generate(){
 
 	}
 
-	scope.trees()
+	scope.trees() // Add some trees and color.
 
-	window.setTimeout( scope.complete, 0 )
+	window.setTimeout( scope.complete, 0 ) // Enqueue stage generate completion.
+	
 	// End Terrain Growth
 	}
 
