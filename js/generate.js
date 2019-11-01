@@ -207,7 +207,7 @@ function Generate(){
 	// Current position in generation and total length of the path.
 	// Length actually varies depending on the last section generated.
 	let position = 0
-	let length = 100
+	let length = 666
 
 	// Used to store information for a section generated
 	let section = 0
