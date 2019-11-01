@@ -14,8 +14,12 @@ function State() {
 
 	const id = window.requestAnimationFrame( scope.start )
 	let START = false
-	title()
 
+	const promo = document.getElementById('promo')
+	title()
+	
+	ui.textbox('special stage x ginko', 2, 8)
+	ui.textbox('sponsor merch available now', 2, 10)
 	ui.button('start', function(){
 		START = true
 		ui.clear()
@@ -24,7 +28,7 @@ function State() {
 		window.cancelAnimationFrame( id )
 		window.requestAnimationFrame( main )
 		firebase.analytics().logEvent('game_start');
-
+		document.body.removeChild(promo)
 	}, 2, ui.yl-12, ui.xl-4, 6, true )
 
 	if( !START ){
@@ -199,9 +203,8 @@ function State() {
 
 	function title(){
 
-		ui.textbox('special stage',  2, 3 )
+		ui.textbox('special stage', 2, 4)
 		ui.textbox('-', 2, 6 )
-
 		if( CHALLENGE ){
 			ui.textbox('rival challenge',2,10)
 			ui.textbox('seed ' + SEED, 2,14)
