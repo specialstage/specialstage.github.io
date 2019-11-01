@@ -81,6 +81,7 @@ function Generate(){
 
 	// Stores path nodes representing each step in the path generation.
 	// Generated in this.path() using this.extrude().
+
 	const nodes = new THREE.Line( new THREE.Geometry() )
 	nodes.name = 'Generative Nodes'
 	nodes.visible = false
@@ -88,12 +89,14 @@ function Generate(){
 	nodes.material.name = 'Node Material'
 
 	// Reference object used to create new path segments() in this.extrude().
+
 	const extruder = new THREE.Points( new THREE.Geometry() )
 	extruder.name = 'Generative Extruder'
 	extruder.visible = false
 
 	// Path surface used for collision detection.
 	// Generated in this.import with this.extrude().
+
 	const surface = new THREE.Mesh( new THREE.Geometry() )
 	surface.name = 'Generative Surface'
 	surface.visible = false
@@ -102,6 +105,7 @@ function Generate(){
 
 	// Path perimeter used for rendering and reference for generating.
 	// Generated in this.import() with this.extrude().
+
 	const perimeter = new THREE.LineSegments( new THREE.Geometry() )
 	perimeter.name = 'Generative Perimeter'
 	perimeter.material.color = palette[1]
@@ -110,6 +114,7 @@ function Generate(){
 	// Segments dividing each path step.
 	// Used for rendering and as a reference for generating.
 	// Generated in this.import() with this.extrude().
+
 	const segments  = new THREE.LineSegments( new THREE.Geometry() )
 	segments.name = 'Generative Segments'
 	segments.visible = true
@@ -118,6 +123,7 @@ function Generate(){
 
 	// Terrain mesh object used for rendering and collisions.
 	// Generated using this.terrain().
+
 	const terrain = new THREE.Mesh( new THREE.Geometry(),
 					new THREE.MeshBasicMaterial( {vertexColors: THREE.VertexColors} ) )
 	terrain.name = 'Terrain'
@@ -128,12 +134,14 @@ function Generate(){
 
 	// Tree container.
 	// Generated using this.trees().
+
 	const trees = new THREE.LineSegments( new THREE.Geometry() )
 	trees.name = 'Trees'
 	trees.material.color = palette[9]
 
 	// Object used to render background behind wireframes.
 	// Helps reduce the visual noise of layered wireframe lines.
+
 	const background = new THREE.Mesh( new THREE.Geometry(), new THREE.MeshBasicMaterial() )
 	background.name = 'Background'
 	background.material.color = palette[0]
@@ -145,7 +153,8 @@ function Generate(){
 	background.material.blendMode = THREE.MultiplyBlending
 	background.material.transparent = true
 
-	// The night sky used for rendering.
+	// A simple star field.
+
 	const stars = new THREE.Points( new THREE.Geometry() )
 	stars.material.color = palette[1]
 	stars.material.sizeAttenuation = false
@@ -154,6 +163,7 @@ function Generate(){
 
 	// Collision mesh container.
 	// As new collision objects are generated they are added.
+
 	const collision = new THREE.Mesh( new THREE.Geometry() )
 	collision.name = 'Collision Mesh'
 	collision.visible = true
@@ -162,7 +172,10 @@ function Generate(){
 	collision.material.side = THREE.BackSide
 
 	// Container for generated checkpoints
+
 	this.checkpoints = []
+
+	// Targets used for the extruder object.
 
 	const direction = new THREE.Vector3( 0, 3, 0 )
 	const pitch		= new THREE.Vector3( 1, 0, 0 )
@@ -174,11 +187,13 @@ function Generate(){
 	const perimeterBuffer = perimeter.geometry.clone()
 
 	// Used to store lane width values and extrusion targets.
+
 	const lane = []
 	const laneNormal = []
 	const lastNormal = new THREE.Vector3()
 
-	// Initial lane  parameters values
+	// Initial lane size parameters and normals.
+
 	lane[0] = new THREE.Vector3(  4, 3, 0 )
 	lane[1] = new THREE.Vector3( -4, 3, 0 )
 
@@ -189,6 +204,7 @@ function Generate(){
 	laneNormal.z += 1
 
 	// Parameters for Path Generation
+
 	let up = new THREE.Vector3( 0, 0, 1 )
 	let slope	  = 0
 	let angle	  = 0
@@ -197,30 +213,36 @@ function Generate(){
 
 	// Angle grid used for stepping angle and slope
 	// Used in this.path and this.extrude
+
 	const slope_step = Math.PI/64
 	const angle_step = Math.PI/32
 
-	// If the path is in a turn state, and the side it is turning.
+	// Used to store turn state, and the alignment.
+
 	let turn = true
 	let sign = -1
 
 	// Current position in generation and total length of the path.
 	// Length actually varies depending on the last section generated.
+
 	let position = 0
 	let length = 666
 
-	// Used to store information for a section generated
+	// Used to store information for a section generated.
+
 	let section = 0
 	let section_angle = 0
 	let section_slope = 0
 	let section_start = 50
 	let section_end = 9999
 
-	// Used to store backtracking information
+	// Used to store backtracking information.
+
 	let backtrack = false
 	let history = []
 
-	// Used to store generated path extrusion instructions
+	// Used to store generated path extrusion instructions.
+
 	let instructions = []
 	let timer   = 0
 	let framecount = 0
@@ -228,6 +250,7 @@ function Generate(){
 	let loadtime = 0
 
 	// The translation to center the stage and the start position.
+
 	let translate = new THREE.Vector3()
 	this.start	= new THREE.Vector3()
 
@@ -243,6 +266,7 @@ function Generate(){
 	this.DISTANCE = 0
 
 	// Heuristic used to generate intial stage challenge times
+
 	let HEURISTIC	= 18
 
 	const raycaster = new THREE.Raycaster()
@@ -812,120 +836,128 @@ function Generate(){
 
 	}
 
-this.terrain = function(){
+	this.terrain = function(){
 
-	// Needed
-	terrain.geometry.dispose()
-	terrain.geometry.copy( new THREE.Geometry() )
+		// Needed to reset terrain geometry.
+		terrain.geometry.dispose()
+		terrain.geometry.copy( new THREE.Geometry() )
 
-	let buffer   = [] // List buffer vertices by index.
-	let vertices = [] // List of active vertices.
-	let target   = [] // List of extrusion targets.
+		let buffer   = [] // List buffer vertices by index.
+		let vertices = [] // List of active vertices.
+		let target   = [] // List of extrusion targets.
 
-	// Edges are split into two sides for easier referencing.
-	for( let s = 0; s < 2; s++ ){
+		// Edges are split into two sides for easier referencing.
+		for( let s = 0; s < 2; s++ ){
 
-		target[s] = []
-		buffer[s] = []
-		vertices[s] = []
-
-	}
-
-	// Create initial list of edge vertices by using the previously generated segments geometry.
-	for( let v = 0; v < segments.geometry.vertices.length; v++ ){
-
-		let s = v%2
-		vertices[s].push( segments.geometry.vertices[v] )
-
-	}
-
-	// Create initial extrusion targets by mirroring the shared edge vertices in the same segment.
-	for( let s = 0; s < 2; s++ ){
-	for( let i = 0; i < vertices[s].length; i++ ){
-
-		let n = ( s === 0 ) ? 1 : -1
-
-			let t = vertices[s][i].clone()
-			t.sub( vertices[s+n][i] )
-
-			t.normalize().multiplyScalar(3)
-
-		target[s][i] = (t.clone())
-
-	}
-	}
-
-	// Begin mesh growth. STEPS is how many extrusion steps away from the path.
-	// As STEPS increases, the generation time increases exponetioally...
-	for( let i = 0; i < STEPS; i++ ){
-
-		console.log('Terrain Level ' + i + ' / ' + 5)
-
-		terrain.geometry.verticesNeedUpdate = true
-		terrain.geometry.elementsNeedUpdate = true
-		terrain.geometry.computeBoundingSphere()
-		terrain.geometry.computeFaceNormals()
-		terrain.updateMatrixWorld()
-
-	// Iterate through each side
-	for( let s = 0; s < 2; s++ ){
-		
-		// Copy buffer to active edge vertices
-		if( i > 0 ){
-
+			target[s] = []
+			buffer[s] = []
 			vertices[s] = []
-
-			for( let v = 0; v < buffer[s].length; v++ ){
-
-				vertices[s][v] = terrain.geometry.vertices[buffer[s][v]]
-
-			}
 
 		}
 
-		// Carry over extrusion targets from previous iteration.
-		target[s] = Array.from( target[s] )
-		// Clear the buffer.
-		buffer[s] = []
+		// Create initial list of edge vertices by using the previously generated segments geometry.
+		for( let v = 0; v < segments.geometry.vertices.length; v++ ){
 
-		// Iterate through active edge vertices
-		for( let v = 0; v < vertices[s].length; v++ ){
+			let s = v%2
+			vertices[s].push( segments.geometry.vertices[v] )
 
-			target[s][v].z -= i/5 // Apply a slight slope away from the path.
+		}
 
-			let flag = false // flag intersecting vertices
+		// Create initial extrusion targets by mirroring the shared edge vertices in the same segment.
+		for( let s = 0; s < 2; s++ ){
+		for( let i = 0; i < vertices[s].length; i++ ){
 
-			// Skip face generation if vertices is undefined.
-			if( vertices[s][v] !== undefined && vertices[s][v-1] !== undefined ){
+			let n = ( s === 0 ) ? 1 : -1
 
-				// Ignore undefined targets as they previously intersected the terrain.
-				if( target[s][v] === undefined ){
+				let t = vertices[s][i].clone()
+				t.sub( vertices[s+n][i] )
 
-					target[s][v] = target[s][v-1].clone()
+				t.normalize().multiplyScalar(3)
+
+			target[s][i] = (t.clone())
+
+		}
+		}
+
+		// Begin mesh growth. STEPS is how many extrusion steps away from the path.
+		// As STEPS increases, the generation time increases exponetially... ):
+		for( let i = 0; i < STEPS; i++ ){
+
+			console.log('Terrain Level ' + i + ' / ' + 5)
+
+			terrain.geometry.verticesNeedUpdate = true
+			terrain.geometry.elementsNeedUpdate = true
+			terrain.geometry.computeBoundingSphere()
+			terrain.geometry.computeFaceNormals()
+			terrain.updateMatrixWorld()
+
+		// Iterate through each side
+		for( let s = 0; s < 2; s++ ){
+
+			// Copy buffer to active edge vertices
+			if( i > 0 ){
+
+				vertices[s] = []
+
+				for( let v = 0; v < buffer[s].length; v++ ){
+
+					vertices[s][v] = terrain.geometry.vertices[buffer[s][v]]
 
 				}
-				// Pre-check if the target will intersect the existing terrain geometry.
-				else{
 
-					terrain.geometry.computeBoundingSphere()
+			}
 
-					let location = vertices[s][v].clone().add( target[s][v] )
-					location.z -= 100
-					let up = new THREE.Vector3(0,0,1)
-					raycaster.set( location, up )
+			// Carry over extrusion targets from previous iteration.
 
-					location.z += 100
+			target[s] = Array.from( target[s] )
 
-					let intersects = raycaster.intersectObjects( [ terrain, collision ], true )
+			// Clear the buffer.
 
-					if( intersects.length > 0 ){
+			buffer[s] = []
 
-						for( let intersect in intersects ){
+			// Iterate through active edge vertices
 
-							if( intersects[intersect].point.distanceTo( location ) > 0.01 ){
+			for( let v = 0; v < vertices[s].length; v++ ){
 
-							buffer[s][v] = undefined // Ignore vertices with intersecting targets
-							flags		 = true		 // flag intersecting target 
+				target[s][v].z -= i/5 // Apply a slight slope away from the path.
+
+				let flag = false // flag intersecting vertices
+
+				// Skip face generation if vertices is undefined.
+
+				if( vertices[s][v] !== undefined && vertices[s][v-1] !== undefined ){
+
+					// Ignore undefined targets as they previously intersected the terrain.
+
+					if( target[s][v] === undefined ){
+
+						target[s][v] = target[s][v-1].clone()
+
+					}
+
+					// Pre-check if the target will intersect the existing terrain geometry.
+
+					else{
+
+						terrain.geometry.computeBoundingSphere()
+
+						let location = vertices[s][v].clone().add( target[s][v] )
+						location.z -= 100
+						
+						raycaster.set( location, up )
+
+						let intersects = raycaster.intersectObjects( [ terrain, collision ], true )
+
+						if( intersects.length > 0 ){
+
+							for( let intersect in intersects ){
+
+								if( intersects[intersect].point.distanceTo( location ) > 0.01 ){
+
+								buffer[s][v] = undefined // Ignore vertices with intersecting targets
+								flags		 = true		 // flag intersecting target 
+
+								}
 
 							}
 
@@ -933,114 +965,123 @@ this.terrain = function(){
 
 					}
 
-				}
-				// Push a new face for the first half of a quadstrip if target does not intersect terrain geometry.
-				if( !flag ){
+					// Push a new face for the first half of a quadstrip if target does not intersect terrain geometry.
+					
+					if( !flag ){
 
-					terrain.geometry.vertices.push( vertices[s][v].clone() )
-					terrain.geometry.vertices.push( vertices[s][v].clone().add( target[s][v]) )
+						terrain.geometry.vertices.push( vertices[s][v].clone() )
+						terrain.geometry.vertices.push( vertices[s][v].clone().add( target[s][v]) )
 
-					buffer[s][v] = terrain.geometry.vertices.length-1
+						buffer[s][v] = terrain.geometry.vertices.length-1
 
-					if( v > 0  ){
+						if( v > 0  ){
 
-					terrain.geometry.vertices.push( vertices[s][v-1].clone() )
-					const length = terrain.geometry.vertices.length
+						terrain.geometry.vertices.push( vertices[s][v-1].clone() )
+						const length = terrain.geometry.vertices.length
 
-						if( s === 0 ){
+							if( s === 0 ){
 
-						terrain.geometry.faces.push( new THREE.Face3( length-2, length-1, length-3 ) )
+							terrain.geometry.faces.push( new THREE.Face3( length-2, length-1, length-3 ) )
+
+							}
+							else if( s === 1 ){
+
+							terrain.geometry.faces.push( new THREE.Face3( length-1, length-2, length-3 ) )
+
+							}
 
 						}
-						else if( s === 1 ){
 
-						terrain.geometry.faces.push( new THREE.Face3( length-1, length-2, length-3 ) )
+					} // End first quadstrip face creation.
 
-						}
+				} // End vertices type checking.	
+
+			} // End edge vertices iteration.
+
+			// Iterate through edge buffer to pre-validate edge distances.
+
+			for( let v = 1; v < buffer[s].length; v++ ){
+
+				// Ignore undefined buffer vertices as they have previously had intersecting targets.
+
+				if( buffer[s][v] !== undefined && buffer[s][v-1] !== undefined ){
+
+					let a = terrain.geometry.vertices[ buffer[s][v] ]
+					let b = terrain.geometry.vertices[ buffer[s][v-1] ]
+
+					// Decimate buffer edge by merging vertices and ignoring the second quadstrip face.
+
+					if ( a.distanceTo(b) < 2.8 ){
+
+						a.copy(b)
+						buffer[s][v] = buffer[s][v-1]
+						target[s][v].copy( target[s][v-1] )
 
 					}
-				// End first quadstrip face creation.
-				}
-			// End vertices type checking.	
-			}
+
+					// Else add a new vertices and push a new face to fill the quadstrip.
+
+					else if ( v > 1 ){
+
+						terrain.geometry.vertices.push( vertices[s][v-1] )
+
+						let a = ( s === 0 ) ? buffer[s][v  ] : buffer[s][v-1]
+						let b = ( s === 0 ) ? buffer[s][v-1] : buffer[s][v  ]
+
+						terrain.geometry.faces.push(
+
+							new THREE.Face3( a, b, terrain.geometry.vertices.length-1 )
+
+						)
+
+						terrain.geometry.elementsNeedUpdate = true
+
+					} //End decimate/face fill.
+
+				} // End buffer type check.	
+
+
+			} // End buffer iteration
+
+
+		} // End side iteration.
+
+
+		} // End step iteration.
+
+
+		// Signal terrain geometry updates.
+
+		terrain.geometry.verticesNeedUpdate = true
+		terrain.geometry.elementsNeedUpdate = true
+		terrain.geometry.computeFaceNormals()
+		terrain.geometry.computeVertexNormals()
+		terrain.geometry.mergeVertices()
+		terrain.geometry.computeBoundingSphere()
+		scope.noise( terrain.geometry )
+
+		// Copy terrain faces to collision mesh.
+
+		for( let i = 0; i < terrain.geometry.faces.length; i++ ){
+
+			let a = terrain.geometry.vertices[ terrain.geometry.faces[i].a ].clone()
+			let b = terrain.geometry.vertices[ terrain.geometry.faces[i].b ].clone()
+			let c = terrain.geometry.vertices[ terrain.geometry.faces[i].c ].clone()
+
+			collision.geometry.vertices.push( a )
+			collision.geometry.vertices.push( b )
+			collision.geometry.vertices.push( c )
+
+			let length = collision.geometry.vertices.length
+			collision.geometry.faces.push( new THREE.Face3( length-1, length-2, length-3 ) )
 
 		}
 
-		// Iterate through edge buffer to pre-validate edge distances.
-		for( let v = 1; v < buffer[s].length; v++ ){
+		scope.trees() // Add some trees and color.
 
-			// Ignore undefined buffer vertices as they have previously had intersecting targets 
-			if( buffer[s][v] !== undefined && buffer[s][v-1] !== undefined ){
+		window.setTimeout( scope.complete, 0 ) // Enqueue stage generate completion.
 
-				let a = terrain.geometry.vertices[ buffer[s][v] ]
-				let b = terrain.geometry.vertices[ buffer[s][v-1] ]
-				
-				// Decimate buffer edge by merging vertices and ignore the second quadstrip face.
-				if ( a.distanceTo(b) < 2.8 ){
-
-					a.copy(b)
-					buffer[s][v] = buffer[s][v-1]
-					target[s][v].copy( target[s][v-1] )
-
-				}
-				// Else add a new vertices and push a new face to fill the quadstrip.
-				else if ( v > 1 ){
-
-					terrain.geometry.vertices.push( vertices[s][v-1] )
-
-					let a = ( s === 0 ) ? buffer[s][v  ] : buffer[s][v-1]
-					let b = ( s === 0 ) ? buffer[s][v-1] : buffer[s][v  ]
-
-					terrain.geometry.faces.push(
-
-						new THREE.Face3( a, b, terrain.geometry.vertices.length-1 )
-
-					)
-
-					terrain.geometry.elementsNeedUpdate = true
-				//End face fill.
-				}
-			// End buffer type check.	
-			}
-		// End buffer checking iteration.
-		}
-	// End side iteration.
-	}
-
-	// End mesh growth.
-	}
-
-	// Signal terrain geometry updates.
-	terrain.geometry.verticesNeedUpdate = true
-	terrain.geometry.elementsNeedUpdate = true
-	terrain.geometry.computeFaceNormals()
-	terrain.geometry.computeVertexNormals()
-	terrain.geometry.mergeVertices()
-	terrain.geometry.computeBoundingSphere()
-	scope.noise( terrain.geometry )
-
-	// Copy terrain faces to collision mesh.
-	for( let i = 0; i < terrain.geometry.faces.length; i++ ){
-
-		let a = terrain.geometry.vertices[ terrain.geometry.faces[i].a ].clone()
-		let b = terrain.geometry.vertices[ terrain.geometry.faces[i].b ].clone()
-		let c = terrain.geometry.vertices[ terrain.geometry.faces[i].c ].clone()
-
-		collision.geometry.vertices.push( a )
-		collision.geometry.vertices.push( b )
-		collision.geometry.vertices.push( c )
-
-		let length = collision.geometry.vertices.length
-		collision.geometry.faces.push( new THREE.Face3( length-1, length-2, length-3 ) )
-
-	}
-
-	scope.trees() // Add some trees and color.
-
-	window.setTimeout( scope.complete, 0 ) // Enqueue stage generate completion.
-	
-	// End Terrain Growth
-	}
+	} // End this.terrain()
 
 	this.trees = function(){
 
@@ -1056,25 +1097,37 @@ this.terrain = function(){
 		for( let i = 0; i < faces.length; i++ ){
 			
 			if( Math.abs( faces[i].vertexNormals[0].z ) > 0.9 ){
+
 				flags[ faces[i].a ] = true
 				faces[i].vertexColors[0] = palette[10]
+
 			}
 			else{
+
 				faces[i].vertexColors[0] = palette[10]
+
 			}
 			if( Math.abs( faces[i].vertexNormals[1].z ) > 0.9 ){
+
 				flags[ faces[i].b ] = true
 				faces[i].vertexColors[1] = palette[10]
+
 			}
 			else{
+
 				faces[i].vertexColors[1] = palette[10]
+
 			}
 			if( Math.abs( faces[i].vertexNormals[2].z ) > 0.9 ){
+
 				flags[ faces[i].c ] = true
 				faces[i].vertexColors[2] = palette[10]
+
 			}
 			else{
+
 				faces[i].vertexColors[2] = palette[10]
+
 			}
 
 		}
@@ -1113,35 +1166,35 @@ this.terrain = function(){
 
 		function tree( p ){
 
-		  var scale = 1
-		  var segments   = Math.floor(scope.random()*8)+6
-		  var branch = 6
-		  var angle = (Math.PI*2)/branch
-		  var weight = 0.3
-		  var base = 1
+			const scale = 1
+			const segments   = Math.floor(scope.random()*8)+6
+			const branch = 6
+			const angle = (Math.PI*2)/branch
+			const weight = 0.3
+			const base = 1
 
-		  var tree = new THREE.Geometry()
+			const tree = new THREE.Geometry()
 
-		  tree.vertices.push(new THREE.Vector3(0,0,0))
-		  tree.vertices.push(new THREE.Vector3(0,0,segments*scale-scale/2+base))
+			tree.vertices.push(new THREE.Vector3(0,0,0))
+			tree.vertices.push(new THREE.Vector3(0,0,segments*scale-scale/2+base))
 
-		  var up = new THREE.Vector3(0,0,1)
+			for ( let s = 1; s < segments; s++ ){
+			for ( let b = 0; b < branch; b++ ){
 
-		  for ( var s = 1; s < segments; s++ ){
-		  for ( var b = 0; b < branch; b++ ){
+				off = angle*((s%2)*0.5)
 
-			off = angle*((s%2)*0.5)
+				tree.vertices.push(new THREE.Vector3(0,0,s*scale+base))
+				tree.vertices.push(new THREE.Vector3((segments-s)*0.3,0,s*scale-weight+base))
+				tree.vertices[tree.vertices.length-1].applyAxisAngle(up, angle*b+off)
 
-			tree.vertices.push(new THREE.Vector3(0,0,s*scale+base))
-			tree.vertices.push(new THREE.Vector3((segments-s)*0.3,0,s*scale-weight+base))
-			tree.vertices[tree.vertices.length-1].applyAxisAngle(up, angle*b+off)
+			}
+			}
 
-		  }
-		  }
+			return(tree)
 
-		  return(tree)
-		}
-	}
+		} // End tree()
+
+	} // End this.trees()
 
 	this.checkpoint = function(){
 
@@ -1241,19 +1294,21 @@ this.terrain = function(){
 
 			return { display: display, collision: mesh }
 
-		}
+		} // End checkpoint()
 
 		return array
 
-	}
+	} // End this.checkpoint()
 
 	this.resetCheckpoints = function(){
 		
 		for( let i in scope.checkpoints ){
+
 			scope.checkpoints[i].display.material.color = palette[5]
+
 		}
 
-	}
+	} // End this.resetCheckpoints()
 
 	this.random = function(){
 
@@ -1264,92 +1319,67 @@ this.terrain = function(){
 
 		return n
 
-	}
+	} // End this.random()
 
 	this.randomInt = function( lo, hi ){
-	
+
 		return Math.floor( scope.random()*( hi-lo ))+lo
+
+	} // End this.randomInt()
+
+	this.noise = function( geometry ){
+
+	const perlin = new ImprovedNoise()
+	const noise = []
+	let quality = 8
+
+	let hi = 0
+	let lo = 0
+	const z = scope.random()*1000
+	let factor = 0.5
+
+	for (let i = 0; i < geometry.vertices.length; i++) {
+
+	  noise[i] = 0
 
 	}
 
-  this.noise = function( geometry ){
+	for (let r = 0; r < 2; r++) {
+	for (let i = 0; i < geometry.vertices.length; i++) {
 
-    const perlin = new ImprovedNoise()
-    const noise = []
-    let quality = 8
+		let x = geometry.vertices[i].x
+		let y = geometry.vertices[i].y
 
-    let hi = 0
-    let lo = 0
-    const z = scope.random()*1000
-    let factor = 0.5
+		noise[i] += Math.floor(perlin.noise(x / (quality), y / (quality), z) * quality )
 
-    for (let i = 0; i < geometry.vertices.length; i++) {
+		if( noise[i] > hi ) hi = noise[i]
+		if( noise[i] < lo ) lo = noise[i]
 
-      noise[i] = 0
+	}
 
-    }
+	quality *= 3
 
-    for (let r = 0; r < 2; r++) {
-    for (let i = 0; i < geometry.vertices.length; i++) {
+	}
 
-        let x = geometry.vertices[i].x
-        let y = geometry.vertices[i].y
+	for (let i = 0; i < noise.length; i++) {
 
-        noise[i] += Math.floor(perlin.noise(x / (quality), y / (quality), z) * quality )
+		let factor = 0.5
 
-        if( noise[i] > hi ) hi = noise[i]
-        if( noise[i] < lo ) lo = noise[i]
+		for (let k = 0; k < segments.geometry.vertices.length; k++ ) {
+		  const dist = geometry.vertices[i].distanceTo(segments.geometry.vertices[k])
+		  const d = ( dist*dist )/100
 
-    }
-    
-    quality *= 3
+		  if( d < factor ){
+			 factor = d
+		  }
 
-    }
+		}
 
-    for (let i = 0; i < noise.length; i++) {
+	  geometry.vertices[i].z += noise[i]*factor
 
-    	let factor = 0.5
+		}
 
-        for (let k = 0; k < segments.geometry.vertices.length; k++ ) {
-          const dist = geometry.vertices[i].distanceTo(segments.geometry.vertices[k])
-          const d = ( dist*dist )/100
+	} // End this.noise()
 
-          if( d < factor ){
-          	 factor = d
-          }
-
-        }
-
-      geometry.vertices[i].z += noise[i]*factor
-      
-    }
-
-  }
-
-    this.searchSpace = function(p){
-
-      var array = []
-      var x = p.x
-      var y = p.y
-
-      if ( x > 0 && y > 0 ){
-        array.push({x: x-1, y: y  })
-        array.push({x: x-1, y: y-1})
-        array.push({x: x,   y: y-1})
-      }
-      if ( x < stage.partitionSize-1 && y < stage.partitionSize-1 ){
-        array.push({x: x,   y: y+1})
-        array.push({x: x+1, y: y  })
-        array.push({x: x+1, y: y+1})
-      }
-      if( x < stage.partitionSize-1 && y > 0 ){
-        array.push({x: x+1, y: y-1})
-      }
-      if( y < stage.partitionSize-1 && x > 0 ){
-        array.push({x: x-1, y: y+1})
-      }
-
-      return array
-    }
 
 }
