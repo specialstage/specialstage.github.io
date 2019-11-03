@@ -157,7 +157,7 @@ function State() {
 
 	this.readycheck = function(){
 
-		if( !MOBILE ) ui.textbox('keyboard controls - arrow keys', 2, ui.yl-16 )
+		if( !MOBILE ) ui.textbox('keyboard controls - arrow keys - wasd - r restart', 2, ui.yl-16 )
 
 		ui.button( 'ready', function(){
 

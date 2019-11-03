@@ -97,9 +97,8 @@ function init(){
 
 	const promo = document.createElement('a')
 	promo.id = 'promo'
-	promo.href = 'http://ginko.ltd'
+	promo.href = 'https://ginko.ltd'
 	promo.target = '_blank'
-// 	promo.style.backgroundImage = 'url(https://assets.bigcartel.com/product_images/247242497/GLITCHO_GIF_20191023_193257.gif)'
 	document.body.appendChild( promo )
 
 	state.start()
