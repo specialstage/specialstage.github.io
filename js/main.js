@@ -102,7 +102,7 @@ function init(){
 	
 	if( CHALLENGE ){
 		
-		promo.style.top = '144px'
+		promo.style.top = '176px'
 		
 	}
 	document.body.appendChild( promo )
