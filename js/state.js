@@ -206,9 +206,9 @@ function State() {
 		ui.textbox('special stage', 2, 4)
 		ui.textbox('-', 2, 6 )
 		if( CHALLENGE ){
-			ui.textbox('rival challenge',2,10)
-			ui.textbox('seed ' + SEED, 2,14)
-			ui.textbox('time ' + ui.getTextFloat( OBJECTIVES[3] ),2,16)
+			ui.textbox('rival challenge',2,12)
+			ui.textbox('seed ' + SEED, 2,16)
+			ui.textbox('time ' + ui.getTextFloat( OBJECTIVES[3] ),2,18)
 		}
 
 	}
