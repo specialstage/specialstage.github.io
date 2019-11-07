@@ -99,6 +99,12 @@ function init(){
 	promo.id = 'promo'
 	promo.href = 'https://ginko.ltd'
 	promo.target = '_blank'
+	
+	if( CHALLENGE ){
+		
+		promo.style.top = '144px'
+		
+	}
 	document.body.appendChild( promo )
 
 	state.start()
