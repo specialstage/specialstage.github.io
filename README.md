@@ -42,3 +42,7 @@ The Special Stage source can also be reviewed for insight and education, as well
 - Network Battle
 - Level Editor
 - Engine Abstraction
+
+### known bugs
+
+Game fails to load when firebase is unavlaible. Consider surrounding all calls in try catch

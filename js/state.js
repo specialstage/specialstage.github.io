@@ -27,7 +27,7 @@ function State() {
 		stage.connect()
 		window.cancelAnimationFrame( id )
 		window.requestAnimationFrame( main )
-		firebase.analytics().logEvent('game_start');
+		//firebase.analytics().logEvent('game_start');
 		document.body.removeChild(promo)
 	}, 2, ui.yl-12, ui.xl-4, 6, true )
 

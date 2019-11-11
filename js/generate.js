@@ -368,7 +368,7 @@ function Generate(){
 		stage.start   = scope.start.clone()
 		loadtime = window.performance.now()-loadtime
 		console.log( 'Load Time: ' + loadtime/1000 )
-		firebase.analytics().logEvent('stage_generation_complete', { time: Math.round(loadtime/1000) } )
+		//firebase.analytics().logEvent('stage_generation_complete', { time: Math.round(loadtime/1000) } )
 		
 		ui.clear()
 		ui.textbox('stage generation complete.',2,4)
@@ -1159,43 +1159,45 @@ function Generate(){
 		}
 
 		const faces = terrain.geometry.faces
-		for( let i = 0; i < faces.length; i++ ){
-			
-			if( Math.abs( faces[i].vertexNormals[0].z ) > 0.9 ){
+		for( let i = 0; i < faces.length; i++ ){ //Dylan plz why 
+			for(let j = 0; j < 3; j++){
+				if( Math.abs( faces[i].vertexNormals[j].z ) > 0.9 ){
 
-				flags[ faces[i].a ] = true
-				faces[i].vertexColors[0] = palette[10]
-
+					flags[ faces[i].a ] = true
+					faces[i].vertexColors[0] = palette[10]
+	
+				}
+				else{
+	
+					faces[i].vertexColors[0] = palette[10]
+	
+				}
+				// if( Math.abs( faces[i].vertexNormals[1].z ) > 0.9 ){
+	
+				// 	flags[ faces[i].b ] = true
+				// 	faces[i].vertexColors[1] = palette[10]
+	
+				// }
+				// else{
+	
+				// 	faces[i].vertexColors[1] = palette[10]
+	
+				// }
+				// if( Math.abs( faces[i].vertexNormals[2].z ) > 0.9 ){
+	
+				// 	flags[ faces[i].c ] = true
+				// 	faces[i].vertexColors[2] = palette[10]
+	
+				// }
+				// else{
+	
+				// 	faces[i].vertexColors[2] = palette[10]
+	
+				// }
+	
 			}
-			else{
-
-				faces[i].vertexColors[0] = palette[10]
-
-			}
-			if( Math.abs( faces[i].vertexNormals[1].z ) > 0.9 ){
-
-				flags[ faces[i].b ] = true
-				faces[i].vertexColors[1] = palette[10]
-
-			}
-			else{
-
-				faces[i].vertexColors[1] = palette[10]
-
-			}
-			if( Math.abs( faces[i].vertexNormals[2].z ) > 0.9 ){
-
-				flags[ faces[i].c ] = true
-				faces[i].vertexColors[2] = palette[10]
-
-			}
-			else{
-
-				faces[i].vertexColors[2] = palette[10]
-
-			}
-
 		}
+			
 
 		for( let i = 0; i < flags.length; i++ ){
 
