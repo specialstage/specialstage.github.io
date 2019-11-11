@@ -899,19 +899,19 @@ function Generate(){
 		terrain.geometry.dispose()
 		terrain.geometry.copy( new THREE.Geometry() )
 
-		let buffer   = [] // List buffer vertices by index.
-		let vertices = [] // List of active vertices.
-		let target   = [] // List of extrusion targets.
+		let buffer   = [[],[]] // List buffer vertices by index.
+		let vertices = [[],[]] // List of active vertices.
+		let target   = [[],[]] // List of extrusion targets.
 
 		// Edges are split into two sides for easier referencing.
 
-		for( let s = 0; s < 2; s++ ){
+		// for( let s = 0; s < 2; s++ ){
 
-			target[s] = []
-			buffer[s] = []
-			vertices[s] = []
+		// 	target[s] = []
+		// 	buffer[s] = []
+		// 	vertices[s] = []
 
-		}
+		// }
 
 		// Create initial list of edge vertices by using the previously generated segments geometry.
 
