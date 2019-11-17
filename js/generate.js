@@ -893,6 +893,44 @@ function Generate(){
 	}
 
 	this.terrain = function(){
+		//this.initTargets = function(){
+		//	return [];
+		//}
+
+		this.initTarget = function(x){
+			let target = [[],[]]
+		
+			for( let s = 0; s < 2; s++ ){
+				for( let i = 0; i < vertices[s].length; i++ ){
+
+					
+					target[s][i] = x[s][i].clone()
+					
+					if(s === 0) target[s][i].sub( vertices[1][i] );
+					else target[s][i].sub( vertices[0][i] );
+					
+					target[s][i].normalize().multiplyScalar(3)
+
+				
+
+				}
+			}	
+			return target;
+
+		}
+
+		this.initVert = function(){
+			// Create initial list of edge vertices by using the previously generated segments geometry.
+			let vertices = [[],[]];
+			for( let v = 0; v < segments.geometry.vertices.length; v++ ){
+
+					let s = v%2
+					vertices[s].push( segments.geometry.vertices[v] )
+		
+				}
+
+			return vertices;
+		}
 
 		// Needed to reset terrain geometry.
 
@@ -900,8 +938,8 @@ function Generate(){
 		terrain.geometry.copy( new THREE.Geometry() )
 
 		let buffer   = [[],[]] // List buffer vertices by index.
-		let vertices = [[],[]] // List of active vertices.
-		let target   = [[],[]] // List of extrusion targets.
+		let vertices = initVert();// [[],[]] // List of active vertices.
+		let target   = initTarget(vertices); // List of extrusion targets.
 
 		// Edges are split into two sides for easier referencing.
 
@@ -913,31 +951,9 @@ function Generate(){
 
 		// }
 
-		// Create initial list of edge vertices by using the previously generated segments geometry.
+		
 
-		for( let v = 0; v < segments.geometry.vertices.length; v++ ){
-
-			let s = v%2
-			vertices[s].push( segments.geometry.vertices[v] )
-
-		}
-
-		// Create initial extrusion targets by mirroring the shared edge vertices in the same segment.
-
-		for( let s = 0; s < 2; s++ ){
-		for( let i = 0; i < vertices[s].length; i++ ){
-
-			let n = ( s === 0 ) ? 1 : -1
-
-				let t = vertices[s][i].clone()
-				t.sub( vertices[s+n][i] )
-
-				t.normalize().multiplyScalar(3)
-
-			target[s][i] = (t.clone())
-
-		}
-		}
+	
 
 		// Begin mesh growth. STEPS is how many extrusion steps away from the path.
 		// As STEPS increases, the generation time increases exponetially... ):
@@ -954,81 +970,77 @@ function Generate(){
 
 		// Iterate through each side
 
-		for( let s = 0; s < 2; s++ ){
+			for( let s = 0; s < 2; s++ ){
 
 			// Copy buffer to active edge vertices
 
-			if( i > 0 ){
+				if( i > 0 ){
 
-				vertices[s] = []
+					vertices[s] = []
 
-				for( let v = 0; v < buffer[s].length; v++ ){
+					for( let v = 0; v < buffer[s].length; v++ ){
 
-					vertices[s][v] = terrain.geometry.vertices[buffer[s][v]]
-
-				}
-
-			}
-
-			// Carry over extrusion targets from previous iteration.
-
-			target[s] = Array.from( target[s] )
-
-			// Clear the buffer.
-
-			buffer[s] = []
-
-			// Iterate through active edge vertices
-
-			for( let v = 0; v < vertices[s].length; v++ ){
-
-				target[s][v].z -= i/5 // Apply a slight slope away from the path.
-
-				let flag = false // flag intersecting vertices
-
-				// Skip face generation if vertices is undefined.
-
-				if( vertices[s][v] !== undefined && vertices[s][v-1] !== undefined ){
-
-					// Ignore undefined targets as they previously intersected the terrain.
-
-					if( target[s][v] === undefined ){
-
-						target[s][v] = target[s][v-1].clone()
+						vertices[s][v] = terrain.geometry.vertices[buffer[s][v]]
 
 					}
 
-					// Pre-check if the target will intersect the existing terrain geometry.
+				}
 
-					else{
+				// Carry over extrusion targets from previous iteration.
 
-						terrain.geometry.computeBoundingSphere()
+				target[s] = Array.from( target[s] )
 
-						let location = vertices[s][v].clone().add( target[s][v] )
-						location.z -= 100
-						
-						raycaster.set( location, up )
+				// Clear the buffer.
 
-						location.z += 100 // Reset location for distance checking.
+				buffer[s] = []
 
-						let intersects = raycaster.intersectObjects( [ terrain ], true )
+				// Iterate through active edge vertices
 
-						if( intersects.length > 0 ){
+				for( let v = 0; v < vertices[s].length; v++ ){
 
-							for( let intersect in intersects ){
+					target[s][v].z -= i/5 // Apply a slight slope away from the path.
 
-								if( intersects[intersect].point.distanceTo( location ) > 0.01 ){
+					let flag = false // flag intersecting vertices
 
-								buffer[s][v] = undefined // Ignore vertices with intersecting targets.
-								flag		 = true		 // flag intersecting target.
+					// Skip face generation if vertices is undefined.
+
+					if( vertices[s][v] !== undefined && vertices[s][v-1] !== undefined ){
+
+					// Ignore undefined targets as they previously intersected the terrain.
+
+						if( target[s][v] === undefined ){
+
+							target[s][v] = target[s][v-1].clone()
+
+						}else{ // Pre-check if the target will intersect the existing terrain geometry.
+
+							terrain.geometry.computeBoundingSphere()
+
+							let location = vertices[s][v].clone().add( target[s][v] )
+							location.z -= 100
+							
+							raycaster.set( location, up )
+
+							location.z += 100 // Reset location for distance checking.
+
+							let intersects = raycaster.intersectObjects( [ terrain ], true )
+
+							if( intersects.length > 0 ){
+
+								for( let intersect in intersects ){
+
+									if( intersects[intersect].point.distanceTo( location ) > 0.01 ){
+
+									buffer[s][v] = undefined // Ignore vertices with intersecting targets.
+									flag		 = true		 // flag intersecting target.
+
+									}
 
 								}
 
 							}
 
 						}
-
-					}
 
 					// Push a new face for the first half of a quadstrip if target does not intersect terrain geometry.
 					
@@ -1064,7 +1076,7 @@ function Generate(){
 			} // End edge vertices iteration.
 
 			// Iterate through edge buffer to pre-validate edge distances.
-
+		
 			for( let v = 1; v < buffer[s].length; v++ ){
 
 				// Ignore undefined buffer vertices as they have previously had intersecting targets.
@@ -1146,6 +1158,8 @@ function Generate(){
 
 		window.setTimeout( scope.complete, 0 ) // Enqueue stage generate completion.
 
+			// Create initial extrusion targets by mirroring the shared edge vertices in the same segment.
+		
 	} // End this.terrain()
 
 	this.trees = function(){
