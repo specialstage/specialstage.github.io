@@ -27,16 +27,17 @@ body{
 
 #promo{
 	position: fixed;
-	top: 104px;
-	left: 16px;
-	right: 16px;
-	bottom: 188px;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
 	z-index: 200;
-	background-repeat: repeat;
+	background-repeat: no-repeat;
 	background-size: contain;
 	background-position: center;
-	background-image: url(../image/ginko_promo.gif);
-	background-color: #fff;
+	background-image: url(../image/promo.gif);
+	background-color: #000;
+	mix-blend-mode: lighten;
 }
 
 /*
