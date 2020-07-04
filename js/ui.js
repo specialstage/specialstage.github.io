@@ -32,8 +32,8 @@ function UI(){
   
   this.connect = function(){
     
-    this.xl = Math.floor(window.innerWidth/size)
-    this.yl = Math.floor(window.innerHeight/size)
+    this.xl = Math.floor(window.innerWidth/size)/SCALE
+    this.yl = Math.floor(window.innerHeight/size)/SCALE
     
     for( let x = 0; x < this.xl; x++ ){
       grid[x] = []
@@ -102,11 +102,11 @@ function UI(){
   }
   
   this.resize = function(){
-    canvas.width  = window.innerWidth
-    canvas.height = window.innerHeight
+    canvas.width  = window.innerWidth/SCALE;
+    canvas.height = window.innerHeight/SCALE;
 
-    this.xl = Math.floor(window.innerWidth/size)
-    this.yl = Math.floor(window.innerHeight/size)
+    this.xl = Math.floor(window.innerWidth/size)/SCALE
+    this.yl = Math.floor(window.innerHeight/size)/SCALE
     
     for( let x = 0; x < this.xl; x++ ){
       grid[x] = []
@@ -225,7 +225,7 @@ function UI(){
     touches = control.touches 
 
 	for( let i in touches ){
-	if( touches[i].x > x && touches[i].x < x+size*w && touches[i].y > y && touches[i].y < y + size*h+size ){
+	if( touches[i].x/SCALE > x && touches[i].x/SCALE < x+size*w/SCALE && touches[i].y/SCALE > y && touches[i].y/SCALE < y + size*h+size ){
 
 	  if( TOGGLE & touches[i].start === true ){
 	  touches[i].start = false

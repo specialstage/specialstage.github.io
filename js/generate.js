@@ -1,76 +1,3 @@
-/*
-
-Generate handles the procedural generation of stages.
-The Generation process is broken down into the following steps:
-
-Path Generation ( Currently broken, but usable )
-
-	A non intersecting path is generated using the extruder object and this.extrusion.
-
-	The extruder is aligned and stepped forward.
-
-	The position of the extruder is checked against previously generated vertices using a weighted distance.
-
-	If the distance of the generated vertices is below the defined threshold the path is backtracked to the last state.
-
-	**This is essentially a depth first search using levy flights.
-	**Instead of checking for occupied cells, a weighted distance is used.
-	**This helps avoid intersections and dead end states.
-
-	The generated path is represented in a set of discrete instructions describing the angle and slope of the next path step.
-
-Path Importing
-
-	Once a valid path has been generated, the path geometry is generated
-	during this.import
-
-	The Path Segments and Perimeter are drawn out using the world position of the extruder lane vectors.
-
-	A surface mesh is drawn using the segments as a reference.
-
-Terrain Generation
-
-	**Currently this is the heaviest process, as it involves heavy checking.
-
-	**Currently incompleted. Requires more edge solving.
-	
-	Using the segments as an initial reference, a list of open edges is created with extrusion targets generated outward from the path.
-
-	The target raycasts against the terrain mesh in progress to insure there are no intersecting faces.
-
-		If the target intersects a previously generated face it is ignored.
-
-			** Will add recursive angle checking and a stitching algorithm to fill seems
-
-		Else The first half of a quad strip is generated
-
-	The distance between the previously generated vertices and target vertices is checked.
-
-		If below the defined threshold, the vertices merge.
-
-		Else the second half of the quad strip is generated.
-
-	This process is repeated to continuously grow a solid geometry out from the path.
-
-	Once the mesh growth process is complete noise is applied to the generated mesh.
-
-Feature Generation
-
-	Any additional features like decorations and interactable objects will be generated
-	based on vertex normals and path sections.
-
-	Trees
-
-		Each terrain vertex normal is checked for verticality.
-
-		If the vertex normal and noise value are within the thresholds defined a tree is generated.
-
-Complete Process
-
-	Once the generation process is complete a quick clean up is performed.
-	The generator comunicates to the engine that the stage is ready.
-
-*/
 
 function Generate(){
 
@@ -161,6 +88,8 @@ function Generate(){
 	stars.material.sizeAttenuation = false
 	stars.material.size = 1.5
 	stars.material.fog = false
+
+	scope.stars = stars;
 
 	// Collision mesh container.
 	// As new collision objects are generated they are added.
@@ -313,7 +242,7 @@ function Generate(){
 		scene.remove( terrain )
 		scene.remove( background )
 		scene.remove( trees )
-		scene.remove( stars )
+// 		scene.remove( stars )
 		
 		for( let i in scope.checkpoints ){
 
@@ -328,13 +257,19 @@ function Generate(){
 
 	this.complete = function(){
 
+		// Clean up collision geometry
+
 		collision.geometry.mergeVertices()
 		collision.geometry.verticesNeedUpdate = true
 		collision.geometry.elementsNeedUpdate = true
 		collision.geometry.computeFaceNormals()
 		collision.geometry.computeBoundingSphere()
 
+		// Generate checkpoints.
+
 		scope.checkpoints = scope.checkpoint()
+
+		// Add checkpoints to scene.
 
 		for( let i in scope.checkpoints ){
 
@@ -342,10 +277,14 @@ function Generate(){
 
 		}
 
+		// Create wireframe background render object.
+
 		background.geometry.copy( collision.geometry )
 		background.position.z -= 1
 
 		scene.add( background )
+
+		// Create starfield.
 
 		const buffer = new THREE.IcosahedronGeometry(1200,4)
 
@@ -362,14 +301,19 @@ function Generate(){
 
 		buffer.dispose()
 		stars.geometry.computeBoundingSphere()
-		scene.add( stars )
+// 		scene.add( stars )
+
+		// Register collision object.
 
 		stage.surface = collision.clone()
 		stage.start   = scope.start.clone()
 		loadtime = window.performance.now()-loadtime
+
 		console.log( 'Load Time: ' + loadtime/1000 )
 		firebase.analytics().logEvent('stage_generation_complete', { time: Math.round(loadtime/1000) } )
-		
+
+		// Render stage information to ui.
+	
 		ui.clear()
 		ui.textbox('stage generation complete.',2,4)
 		ui.textbox( '-', 2, 6)
@@ -848,18 +792,36 @@ function Generate(){
 
 			this.extrude() // Extrude new path node.
 
+			// Backtrack check.
+
 			for( let j = 0; j < nodesBuffer.vertices.length; j++ ){
 
 				let d1 = new THREE.Vector2( nodesBuffer.vertices[position-1].x, nodesBuffer.vertices[position-1].y )
 				let d2 = new THREE.Vector2( nodesBuffer.vertices[j].x, nodesBuffer.vertices[j].y )
 
 				let distance = d1.distanceTo(d2)
+				let space = 10
+				let index = ( position-1 )-j
+				
+				let factor = ( index < space ) ? 0 : index-space * 0.1
+				factor = ( factor > 40 ) ? 40 : factor
 
-// 				let factor   = Math.abs( (position-1) - j )*0.065
-// 				if ( factor > 20 ) factor = 20
+// 				if( position === Math.floor( length/2 ) + 40 ){
 
-				let factor = 20;
-				if( distance < factor && Math.abs( ( position-1 ) - j ) > 20 ){
+// 					const mesh = new THREE.Mesh(
+
+// 						new THREE.IcosahedronGeometry( factor, 0 ),
+// 						new THREE.MeshBasicMaterial( { wireframe: true } )
+// 					)
+
+// 					mesh.position.copy( nodesBuffer.vertices[j] )
+// 					scene.add( mesh )
+// 					console.log( index )
+// 				}
+
+				// Distance check. Avoid nodes that are connected within a range.
+
+				if( distance < factor ){
 
 				backtrack = true
 
@@ -982,7 +944,7 @@ function Generate(){
 
 			for( let v = 0; v < vertices[s].length; v++ ){
 
-				target[s][v].z -= i/5 // Apply a slight slope away from the path.
+// 				target[s][v].z -= i/5 // Apply a slight slope away from the path.
 
 				let flag = false // flag intersecting vertices
 
@@ -1158,7 +1120,10 @@ function Generate(){
 
 		}
 
+		// Color and flag terrain for details based on the vertex normal.
+
 		const faces = terrain.geometry.faces
+
 		for( let i = 0; i < faces.length; i++ ){
 			
 			if( Math.abs( faces[i].vertexNormals[0].z ) > 0.9 ){
@@ -1197,6 +1162,8 @@ function Generate(){
 
 		}
 
+		// Remove feature flags that are close to the path.
+
 		for( let i = 0; i < flags.length; i++ ){
 
 
@@ -1210,6 +1177,8 @@ function Generate(){
 
 			}
 
+
+			// Generate trees for flagged vertices.
 
 			if( flags[i] && scope.random() < 0.1 ){
 
@@ -1228,6 +1197,8 @@ function Generate(){
 
 		terrain.geometry.colorsNeedUpdate = true
 		scene.add( trees )
+
+		// Generator for individual trees.
 
 		function tree( p ){
 
@@ -1285,14 +1256,20 @@ function Generate(){
 		scope.start.add(geometry.vertices[offset-1])
 
 		for( let i in scope.checkpoints ){
-		scene.add( scope.checkpoints[i] )
-		scene.add( scope.checkpointsDisplay[i] )
+
+			scene.add( scope.checkpoints[i] )
+			scene.add( scope.checkpointsDisplay[i] )
+
 		}
+
+		// Distances from start to each checkpoint
 
 		let d1 = i
 		let d2 = i*2
 		let d3 = i*3
 		let d4 = i*4
+
+		// Create time objectives
 
 		for( let k = 0; k < 4; k++ ){
 
@@ -1308,6 +1285,8 @@ function Generate(){
 			}
 
 		}
+
+		// Generate checkpoint collision object and render object.
 
 		function checkpoint(v1, v2, i){
 

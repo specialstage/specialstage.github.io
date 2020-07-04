@@ -29,7 +29,7 @@ function VHS( camera ){
 
   this.record = function( vehicle ){
 
-    this.tape[frame] = this.capture(vehicle)
+    this.tape[frame] = vehicle.record();
     frame ++
     frame %= capacity
 
@@ -55,22 +55,7 @@ function VHS( camera ){
 
 	}
 
-    vehicle.position.copy( this.tape[frame].position )
-    vehicle.mesh.position.copy( vehicle.position )
-
-    vehicle.dir.copy(this.tape[frame].direction)
-    vehicle.normal.copy(this.tape[frame].normal)
-    vehicle.lookAt.copy( this.tape[frame].lookAt)
-
-    vehicle.UP			= this.tape[frame].UP
-	vehicle.rotation	= this.tape[frame].rotation
-	vehicle.objective	= this.tape[frame].objective
-
-	vehicle.mesh.lookAt( vehicle.lookAt )
-	vehicle.mesh.rotateOnAxis( vehicle.up, vehicle.rotation)
-
-    vehicle.rig( vehicle.up )
-    vehicle.emit()
+    vehicle.replay( this.tape[frame] );
 
     if( this.tape[frame].check ){
 
@@ -89,7 +74,9 @@ function VHS( camera ){
     frame %= this.tape.length
 
     if( frame === 0 ){
-    	stage.generate.resetCheckpoints()
+
+    	stage.generate.resetCheckpoints();
+
     }
   }
 

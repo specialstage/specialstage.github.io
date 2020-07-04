@@ -1,7 +1,10 @@
-window.onload = init
-window.onresize = resize
-window.fullscreenchange = resize
-window.focus = resize
+// P R O C E D U R A L . C A
+
+const BUILD = 'a-0001';
+window.onload = init;
+window.onresize = resize;
+window.fullscreenchange = resize;
+window.focus = resize;
 
 	let palette = [
 
@@ -11,76 +14,90 @@ window.focus = resize
 	0x2c2c2c, // MID DARK
 	0x50ffae, // ACCENT GREEN
 	0xff7272, // ACCENT RED
-	0x2486ff,
+	0x2486ff, // STONE
 	0xff295a,
 	0x344234, // GRASS
 	0x219640, // EVERGREEN
 	0x6d6047, // SOIL
-
-	]
+	0x999999,
+	];
 
 	for( let i in palette ){
+
 		const c = new THREE.Color( palette[i] )
 		palette[i] = c
-	}
+		
+	};
 	
-let LOADSTATUS = 0
+let LOADSTATUS = 0;
 
-let SEED_NAME = ''
+let SEED_NAME = '';
 let SEED = Math.floor( Math.random()*2147483647 )
-
-let scene, camera, renderer, stage, vehicle, control, ui, vhs, state
+// SEED = 43311544;
+let scene, camera, renderer, stage, vehicle, control, ui, vhs, state;
 
 let UP
-let PLAY    	= false
-let IMPORT  	= false
-let BG 	    	= palette[0]
-let FRAME		= 0
+let PLAY    	= false;
+let IMPORT  	= false;
+let BG 	    	= palette[0];
+let FRAME		= 0;
 
-let TIME		= 0
-let TIMER		= 0
-let DT			= 0
-let FPS			= 0
-let COUNTER		= 0
-let TIMEOUT		= 0
-let DNF			= false
-let REASON		= 'dnf'
-let FULLSCREEN	= false
-let MODE 		= 0
-let LOAD 		= 0
-let MENU 		= false
-let MOBILE 		= false
-let CHALLENGE	= false
-let	OBJECTIVES	= []
+let TIME		= 0;
+let TIMER		= 0;
+let DT			= 0;
+let FPS			= 0;
+let COUNTER		= 0;
+let TIMEOUT		= 0;
+let DNF			= false;
+let REASON		= 'out of bounds';
+let FULLSCREEN	= false;
+let MODE 		= 0;
+let LOAD 		= 0;
+let MENU 		= false;
+let MOBILE 		= false;
+let CHALLENGE	= false;
+let	OBJECTIVES	= [];
+
+let SCALE = 1;
 
 function init(){
 
-	decodeURL()
-	window.addEventListener('touchstart', activateTouch )
+	decodeURL();
+	window.addEventListener('touchstart', activateTouch );
 	
-	scene = new THREE.Scene()
-	scene.background = BG
+	scene = new THREE.Scene();
+	scene.background = BG;
 
-	UP = new THREE.Vector3(0,0,1)
-	camera = new THREE.PerspectiveCamera()
+	UP = new THREE.Vector3(0,0,1);
+	camera = new THREE.PerspectiveCamera();
 
-	camera.up = UP
-	camera.position.z = 2000
-	camera.lookAt(0,0,0)
+	camera.up = UP;
+	camera.position.z = 2000;
+	camera.lookAt(0,0,0);
 
-	camera.fov   = 70
-	camera.near  = 0.0001
-	camera.far   = 6000
+	camera.fov   = 70;
+	camera.near  = 0.0001;
+	camera.far   = 3000;
 
-	camera.name = 'Camera'
-	scene.add(camera)
+	camera.name = 'Camera';
+	scene.add(camera);
 
-	renderer = new THREE.WebGLRenderer({logarithmicDepthBuffer: true, antialias: false })
+	renderer = new THREE.WebGLRenderer({logarithmicDepthBuffer: true, antialias: false });
 	renderer.setClearColor(BG)
 	renderer.domElement.id = 'renderer';
 	document.body.appendChild(renderer.domElement)
 
-	vehicle = new Vehicle()
+	let sponsor = document.createElement('a');
+	sponsor.href = 'https://ginko.ltd'
+	sponsor.id = 'sponsor';
+	sponsor.target = 'blank';
+	sponsor.style.top = '64px';
+	sponsor.style.width = '100%';
+	sponsor.style.height = '40px';
+	sponsor.style.display = 'block';
+	sponsor.style.position = 'fixed';
+	sponsor.style.zIndex = '999';
+	document.body.appendChild(sponsor)
 
 	control = new Control()
 	control.connect()
@@ -95,18 +112,6 @@ function init(){
 
 	resize()
 
-	const promo = document.createElement('a')
-	promo.id = 'promo'
-	promo.href = 'https://ginko.ltd'
-	promo.target = '_blank'
-	
-	if( CHALLENGE ){
-		
-		promo.style.bottom = '248px'
-		
-	}
-	document.body.appendChild( promo )
-
 	state.start()
 
 }
@@ -120,8 +125,18 @@ function activateTouch(){
 
 function resize(){
 
-	const w = window.innerWidth
-	const h = window.innerHeight
+	// Scale pixel ratio to nearest integer value
+
+	let meta = document.querySelector("meta[name=viewport]")
+	let viewport = (1 / window.devicePixelRatio) * Math.round( window.devicePixelRatio );
+
+	console.log( viewport )
+	meta.setAttribute(
+	'content', 'width=device-width, initial-scale=' + viewport + ',maximum-scale=1.0, user-scalable=0'
+	);
+
+	const w = window.innerWidth/SCALE;
+	const h = window.innerHeight/SCALE;
 
 	renderer.clear()
 	renderer.setSize(w,h)
@@ -153,7 +168,7 @@ function menu(){
 		MENU = !MENU
 		if( !MENU && PLAY ) vehicle.display()
 		menu()
-// 		if( !vhs.PLAY || vehicle.END ) state.instruments()
+		if( !vhs.PLAY || vehicle.END ) state.instruments()
 
   	}, ui.xl-8, 0, 8, 6, true, false )
 
@@ -173,7 +188,7 @@ function main(){
 		vhs.record( vehicle )
   		vehicle.update()
 		vehicle.display()
-		state.instruments()
+		state.instruments();
 
 		if( MOBILE && !MENU ){
 
@@ -186,9 +201,11 @@ function main(){
 			TIMEOUT++
 
 			if( TIMEOUT > 300 ){
+
 				PLAY = false
 				vhs.PLAY = true
 				ui.clear()
+				
 			}
 
 		}

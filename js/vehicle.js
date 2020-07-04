@@ -1,315 +1,494 @@
 function Vehicle(){
 
-	const gravity = new THREE.Vector3(0,0,-0.009)
-	this.LOAD = false
-	this.mesh
+	// Accessible
 
-	const scope = this
-	//var position = 305
+	const scope = this;
 
-	// FUCKING CHANGE THIS TO AN INPUT
-	this.checkpoint
-	this.TEXTTIME = ''
-	let TIMEOUT = 0
+	this.SPEED = '';
+	this.TEXTTIME = '';
 
-	this.best = []
+	this.START = false;
+	this.END = false;
+	this.OBJECTIVE = 0;
+	this.POSITION;
 
-	for( let i = 0; i < 4; i++ ){
+	// Controls
 
-		this.best[i] = 0
+	let U			= false;
+	let D			= false;
+	let L			= false;
+	let R			= false;
+	let ITEM		= false;
+	let SLIP		= false;
+	let CONTACT		= true;
 
-	}
+	// Time parameters
+	
+	let DT = 60; 
+	let AT = 0;
+	let CP = [];
+	let TIMEOUT = 20;
+	let TIME = 0;
+	let STARTTIME = 0;
 
-	var intersects   = []
+	let REWARD = 0;
+	let YEN = 0;
 
-	const normal = new THREE.Vector3(0,0,1)
-	const target = new THREE.Vector3()
-	const lookAt = new THREE.Vector3()
+	let objective = 0;
+	let CHECK = false;
+// 	let DNF = false;
 
-	this.lookAt = new THREE.Vector3()
-	this.normal = new THREE.Vector3()
-	this.position = new THREE.Vector3()
+	// Initialization Parameters
 
-	this.light
-	this.emitter
-	let emitterCount = 0
+	const param = {
 
-	let surface, boundry
+		power:			0.5,
+		drag:			0.8,
+		mass:			1.0,
+		brake:			1,
+		sensitivity:	0.8,
+		ease:			6,
 
-	let objective = 0
-	let timer = 0
-	let startTime = 0
-	let YEN = 0
-	let REWARD = 0
+	};
 
-	let AT = 0
-	let DT = 0
-	let CT = []
-	let DELTA = []
-	let SAMPLE = 0
-	let CONTACT = false
+	const limits = {
 
-	this.START = false
-	this.END = false
-	this.VELOCITY = 0
+		power:			{ lo: 0.01, hi: 0.02 },
+		drag:			{ lo: 0.98, hi: 0.985 },
+		brake:			{ lo: 0.98, hi: 0.95 },
+		sensitivity:	{ lo: 0.05,	hi: 0.07 },
+		ease:			{ lo: 6,	hi: 18 },
 
-	this.OBJECTIVE = 0
+	};
 
-	this.UP
-	this.DOWN
-	this.LEFT
-	this.RIGHT
+	// Active Parameters
 
-	this.connect = function( _position, input ){
+	let power = limits.power.lo + param.power * ( limits.power.hi-limits.power.lo );
+	let drag = limits.drag.lo + ( param.drag + 0.1 ) * ( limits.drag.hi-limits.drag.lo );
+	let sensitivity = limits.sensitivity.lo + ( param.sensitivity + 0.1 ) * ( limits.sensitivity.hi-limits.sensitivity.lo );
+	let ease = param.ease;
+	let brake = limits.brake.lo + param.brake * ( limits.brake.hi-limits.brake.lo );
+	let speed;
 
-		scene.fog = new THREE.FogExp2( palette[0], 0.01 )
+	let angle = 0;
+	let rotation = 0;
+	let step = 0;
 
-		camera.zoom = 1
-		camera.updateProjectionMatrix()
+	// Steering Vectors
 
-		this.position.copy(_position)
+	const direction		= new THREE.Vector3( 0, 1, 0 );
+	const acceleration	= new THREE.Vector3( 0, 0, 0 );
+	const velocity		= new THREE.Vector3();
 
-		this.position.z += 2
-		this.start = new THREE.Vector3().copy(this.position)
-		this.last = new THREE.Vector3().copy(this.position)
+	// Orientation Vectors
 
-		this.ray        = new THREE.Vector3(0,0,1)
-		this.raycaster  = new THREE.Raycaster(this.position, this.ray, 0, 2)
+	const up			= new THREE.Vector3( 0, 0, 1.0 );
+	const normal		= new THREE.Vector3( 0, 0, 1.0 );
+	const lookTarget	= new THREE.Vector3( 0, 0, 1.0 );
+	const lookAt		= new THREE.Vector3( 0, 0, 1.0 );
+	const gravity		= new THREE.Vector3( 0, 0, -0.0065 );
 
-		this.up = new THREE.Vector3(0,0,1)
+	// Location Vectors
 
-		this.vel    = new THREE.Vector3()
-		this.acc    = new THREE.Vector3()
-		this.dir    = new THREE.Vector3(0,1,0)
+	const position		= new THREE.Vector3();
+	const last			= new THREE.Vector3();
+	const start			= new THREE.Vector3();
+	const contact		= new THREE.Vector3();
 
-		this.rotation = 0
-		this.angle    = 0
-		this.radian   = 0.01
+	// Raycaster
 
-		this.force      = 0.015
-		this.angleGrip  = 0.9
-		this.grip       = 0.98
-		this.brake      = 0.95
+	let intersects	= [];
+	const ray       = new THREE.Vector3(0,0,1);
+	const raycaster	= new THREE.Raycaster( contact, ray, 0, 2 );
 
-		this.mesh = new THREE.LineSegments(
+	// Geometry
 
-		new THREE.EdgesGeometry(
-		new THREE.BoxGeometry(1,2,1)),
-		new THREE.MeshBasicMaterial({ wireframe: false }))
+	const geometry = new THREE.EdgesGeometry( new THREE.BoxGeometry( 1, 2, 1 ) );
+	const material = new THREE.MeshBasicMaterial();
+	const mesh = new THREE.LineSegments( geometry, material );
 
-		scene.add(this.mesh)
+	let emitterCount = 0;
+	const particles = new THREE.Geometry()
 
-		this.mesh.visible = true
-		this.mesh.name = 'Vehicle'
-		this.mesh.geometry.center()
+	while( particles.vertices.length < 100 ){
 
-		particles = new THREE.Geometry()
+		let particle =  new THREE.Vector3(0,0,0)
+		particle.life = 0
+		particle.maxLife = 100
+		particle.acc = new THREE.Vector3(0,0,0)
+		particles.vertices.push(particle)
 
-		for( let i = 0; i < 100; i++ ){
+		let color = new THREE.Color(0xffffff00)
+		particles.colors.push(color)
 
-			let particle =  new THREE.Vector3(0,0,0)
-			particle.life = 0
-			particle.maxLife = 100
-			particle.acc = new THREE.Vector3(0,0,0)
-			particles.vertices.push(particle)
+	};
 
-			let color = new THREE.Color(0xffffff00)
-			particles.colors.push(color)
+	particles.verticesNeedUpdate = true
 
-		}
+	emitter = new THREE.Points(
+	particles,
+	new THREE.PointsMaterial({
 
-		particles.verticesNeedUpdate = true
+	size: 0.1,
+	vertexColors: THREE.VertexColors,
+	blending: THREE.AdditiveBlending,
+	transparent: true
 
-		this.emitter = new THREE.Points(
-		particles,
-		new THREE.PointsMaterial({
+	}));
 
-		size: 0.1,
-		vertexColors: THREE.VertexColors,
-		blending: THREE.AdditiveBlending,
-		transparent: true
+	emitter.name = 'Emitter';
 
-		}));
+	this.connect = function( _start, surface ){
 
-		this.emitter.name = 'Emitter'
-		scene.add(this.emitter);
+		start.copy( _start );
+		position.copy( start );
+		last.copy( position );
+		scene.add( mesh );
+		scene.add( emitter );
 
-		scope.LOAD = true
+		scene.fog = new THREE.FogExp2( palette[0], 0.01 );
 
-		surface = new THREE.Mesh(
-		input.geometry.clone(),
-		new THREE.MeshBasicMaterial({side: THREE.BackSide}))
+		camera.fov = 90;
+		camera.updateProjectionMatrix();
 
-		surface.name = 'Surface'
-		surface.geometry.mergeVertices()
-		surface.geometry.verticesNeedUpdate = true
-		surface.geometry.elementsNeedUpdate = true
-		surface.geometry.computeFaceNormals()
+		scene.add( stage.generate.stars );
 
-		this.checkpoint = stage.checkpoint
-
-		this.mesh.rotateOnAxis( this.up, Math.PI*2)
-		this.rig( this.up )
-
-	}
+	};
 
 	this.disconnect = function(){
 
-		surface.geometry.dispose()
-		scene.remove(this.mesh)
-		scene.remove(this.emitter)
-		scene.fog = new THREE.FogExp2( palette[3], 0 )
-		camera.updateProjectionMatrix()
+		scene.remove( mesh );
+		scene.remove( emitter );
+		scope.reset();
+		scene.fog = new THREE.FogExp2( palette[0], 0 );
+		scene.remove( stage.generate.stars );
 
-		for( let i = 0; i < 4; i++ ){
+	};
 
-			this.best[i] = 0
+	this.ready = function(){
 
-		}
+		if( U ){
 
-	}
+			ui.clear();
+			STARTTIME = performance.now()
+			AT = 0;
+			scope.START = true;
+
+		};
+
+	};
+
+	this.reset = function(){
+
+		scene.remove( mesh );
+		scene.remove( emitter );
+		this.START = false;
+		this.END = false;
+		DNF = false;
+
+		control.UP = false;
+		control.DOWN = false;
+		control.LEFT = false;
+		control.RIGHT = false;
+
+		U = false;
+		D = false;
+		L = false;
+		R = false;
+
+		AT = 0;
+		CP = [];
+		objective = 0;
+
+		position.copy( start );
+		last.copy( position );
+
+		velocity.set( 0, 0, 0 );
+		lookAt.set( 0, 0, 1.0 );
+		mesh.lookAt( lookAt );
+
+		rotation = 0; // Temporary Fix
+		angle = 0;
+
+		vhs.reset();
+		scene.add( mesh );
+		scene.add( emitter );
+
+	};
 
 	this.update = function(){
 
-		this.UP    = ( !this.END ) ? control.UP    : false
-		this.DOWN  = ( !this.END ) ? control.DOWN  : false
-		this.LEFT  = ( !this.END ) ? control.LEFT  : false
-		this.RIGHT = ( !this.END ) ? control.RIGHT : false
+		if( !this.START ){
 
-		DT = 1
-
-		this.acc.multiplyScalar( DT )
-		this.vel.multiplyScalar( DT )
-
-		if( this.UP && CONTACT ){
-
-			this.vel.add(this.acc)
-
-			// Create Vehicle Start Function to intiate update loop
-
-			if( objective === 0 && this.START === false ){
-
-				ui.clear()
-				startTime = performance.now()
-				AT = 0
-				this.START = true
-
-			}
+		this.ready();
 
 		}
 
-		let grip = ( CONTACT ) ? this.grip : 0.999
-		this.vel.multiplyScalar( grip )
+		if( !DNF && !scope.END ){
 
-		this.position.add(this.vel)
-		this.mesh.position.copy(this.position)
-		this.mesh.updateMatrixWorld()
-
-		this.dir.copy( this.mesh.up )
-		this.dir.applyMatrix4( this.mesh.matrixWorld )
-		this.dir.sub(this.position)
-		this.dir.normalize()
-
-		if( this.LEFT )  this.angle += this.radian * DT
-		if( this.RIGHT ) this.angle -= this.radian * DT
-
-		this.angle *= DT
-		this.angle *= (this.angleGrip)
-		this.rotation += this.angle
-
-		this.acc.copy(this.dir).multiplyScalar( this.force )
-
-		if( this.DOWN && CONTACT ) this.vel.multiplyScalar(this.brake)
-
-		target.copy( normal )
-		lookAt.lerp(target, 0.2)
-		lookAt.add( this.position )
-
-		this.mesh.lookAt( lookAt )
-		this.mesh.rotateOnAxis( this.up, this.rotation)
-
-		this.emit()
-		this.rig( lookAt )
-
-		this.lookAt.copy( lookAt )
-		lookAt.sub( this.position )
-
-		this.detect()
-		this.last.copy(this.position)
-
-		this.VELOCITY = Math.round( ( this.vel.length()*60/1000)*3600 )
-
-		if( this.START && !this.END ){
-
-			AT = Math.floor( ( window.performance.now() - startTime )/10 )/100
+		U = control.UP;
+		D = control.DOWN;
+		L = control.LEFT;
+		R = control.RIGHT;
 
 		}
+		else{
 
-		this.TEXTTIME = ui.getTextFloat( AT )
-		this.OBJECTIVE = objective
+		U = false;
+		D = false;
+		L = false;
+		R = false;
 
+		};
 
-		if( control.RESET ){
-		  scope.reset()
-		}
+		emit();
+		align();
+		accelerate();
+		detect();
+		register();
+		rig();
+
+	};
+
+	this.results = function(){
+
+		return { reward: REWARD, yen: YEN };
 
 	}
 
-	this.detect = function(){
+	this.display = function(){
 
-		let intersects = []
+		for( let i = 0; i < CP.length; i++ ){
 
-		this.ray.set( 0, 0, 1 )
-		this.raycaster.far = -this.vel.z + 1
+			let n = i+1;
+			let text = 'cp' + n;
+			let cp = ui.getTextFloat( CP[i] );
+			while( text.length < 16-cp.length ){
 
-		stage.surface.raycast( this.raycaster, intersects )
+				text += ' ';
+
+			}
+
+			text += cp;
+
+			ui.textbox( text , 2, 6+i*2 );
+
+			let rank = ui.getTextFloat( ( stage.best[i]-CP[i] ), true )
+			ui.textbox( rank, Math.floor(ui.xl-2-16+(16-rank.length)), 6+i*2 );
+
+		}
+
+	};
+
+
+	this.replay = function( data ){
+
+		position.copy( data.position )
+		mesh.position.copy( position )
+
+		direction.copy( data.direction);
+		normal.copy( data.normal );
+		lookAt.copy( data.lookAt);
+
+		U = data.UP;
+		CHECK = data.CHECK;
+		rotation = data.rotation;
+		objective = data.objective;
+
+		mesh.lookAt( lookAt );
+		mesh.rotateOnAxis( up, rotation );
+
+		let p = position.clone();
+		camera.lookAt( p );
+
+		p.x -= 20;
+		p.y += 20;
+		p.z += 10;
+
+		camera.position.lerp( p, 0.05 );
+
+		if( CHECK ){
+
+			stage.generate.checkpoints[objective].display.material.color = palette[4]
+
+		}
+
+		emit();
+
+   	}
+
+   	this.record = function(){
+
+   		const data = {
+
+   			position: position.clone(),
+   			direction: direction.clone(),
+   			normal: normal.clone(),
+   			lookAt: lookAt.clone(),
+   			UP: U,
+   			rotation: rotation,
+   			objective: objective,
+   			check: CHECK
+
+   		}
+
+   		return( data );
+
+   	}
+
+	function align(){
+
+		let steering = ( L ) ? 1 : ( R ) ? -1 : 0;
+
+		if( ( L || R ) && Math.abs( step ) < ease ){
+
+			step += steering;
+
+		}
+		else if( Math.abs( step ) > 0 ){
+
+			step -= step / Math.abs( step );
+
+		}
+
+// 		angle = ( ( step / param.ease ) / param.ease );
+
+		angle = ( step / param.ease);
+		
+		angle *= sensitivity;
+		
+		rotation += angle;
+
+		rotation %= Math.PI * 2;
+
+		direction.copy( mesh.up );
+		direction.applyMatrix4( mesh.matrixWorld );
+		direction.sub( position );
+		direction.normalize();
+
+		acceleration.copy( direction );
+
+		speed = velocity.length();
+
+	}
+
+	function accelerate(){
+
+		if( U && CONTACT ){
+
+			acceleration.copy( direction ).multiplyScalar( power );
+
+			velocity.add( acceleration );
+
+		};
+
+		if( D && CONTACT){
+
+			velocity.multiplyScalar( brake );
+		};
+
+		if( CONTACT ){
+
+			velocity.multiplyScalar( drag );
+
+		} else {
+
+			velocity.multiplyScalar( 0.99 );
+
+		};
+
+		position.add( velocity );
+
+		mesh.position.copy( position );
+
+	
+
+	}
+
+	function detect(){
+
+		contact.copy( position );
+		contact.z -= 50;
+
+		intersects = [];
+
+		ray.set( 0, 0, 1 );
+		raycaster.far = 100;
+
+		raycaster.set( contact, ray );
+
+		stage.surface.raycast( raycaster, intersects );
+
 
 		if( intersects.length > 0 ){
 
-			  CONTACT = true
-			  this.position.copy(intersects[0].point)
-			  normal.copy(intersects[0].face.normal)
-			  TIMEOUT = 0
+				contact.copy( intersects[0].point );
+// 				normal.copy( intersects[0].face.normal );
+
+				if( position.z < contact.z && Math.abs( position.z - contact.z ) < velocity.z + gravity.z  + 1){
+
+					TIME = 0;
+					CONTACT = true;
+					normal.copy( intersects[0].face.normal );
+					position.copy( contact )
+
+				}
+				else {
+				
+					if( !CONTACT ){
+
+						velocity.add( gravity );
+
+					}
+					else{
+
+						CONTACT = false;
+						velocity.sub( gravity );
+
+					}
+
+				}
 
 		}
 		else if( intersects.length === 0 ){
-			if( CONTACT ){
 
-	// 			this.vel.z += this.vel.length()/3
-				CONTACT = false
+				CONTACT = false;
+				TIME++;
+				velocity.add( gravity );
 
-			}
-			else{
+				if( TIME > TIMEOUT ){
 
-				CONTACT = false
-				this.vel.add(gravity);
-				TIMEOUT ++
-
-				if( TIMEOUT === 180 ){
-
-					ui.clear()
-					control.clear()
-					MENU = true
-					this.END = true
-					DNF = true
-					REASON = 'out of bounds'
-					YEN -= 100
-					firebase.analytics().logEvent('dnf');
+					DNF = true;
+					MENU = true;
+// 					U = false;
+// 					D = false;
 
 				}
-			}
 
-		}
+		};
 
-		intersects = []
+		lookTarget.lerp( normal, 0.2 );
 
-		this.ray.copy(this.last)
-		this.ray.sub(this.position)
-		this.raycaster.far = this.ray.length()
-		this.ray.normalize()
+		lookAt.copy( lookTarget );
+		lookAt.add( position );
 
-		stage.generate.checkpoints[objective].collision.raycast( this.raycaster, intersects )
-		this.check = false
+		mesh.lookAt( lookAt );
+		mesh.rotateOnAxis( up, rotation );
+
+	};
+
+	function register(){
+
+		intersects = [];
+
+		ray.copy( last );
+		ray.sub( position );
+		raycaster.far = ray.length();
+		ray.normalize();
+		raycaster.set( position, ray );
+
+		stage.generate.checkpoints[objective].collision.raycast( raycaster, intersects );
+		CHECK = false
 
 		if( intersects.length > 0 ){
 
@@ -317,209 +496,138 @@ function Vehicle(){
 
 			if( objective > 0 ){
 
-				CT[objective-1] = AT
+				CP[objective-1] = AT
 
-				this.display()
+				scope.display()
 
-			}
+			};
 
-		  if( objective == 4 ){
-			this.check = true
+		if( objective == 4 ){
+
+			CHECK = true
 
 			if( AT < stage.best[3]  ){
 
 				REWARD = Math.round( ( stage.best[3]-AT ) * 10 )				
 
-			}
+			};
+
 			YEN += REWARD
 
-			objective = 0
-			this.END = true
-			MENU = true
-			firebase.analytics().logEvent('stage_complete', { time: AT, distance: stage.generate.DISTANCE, rating: Math.round( stage.generate.DISTANCE/AT ) } )
-		  }
-		  else{
-			this.check = true
+			objective = 0;
+			scope.END = true;
+			MENU = true;
+			firebase.analytics().logEvent('stage_complete', { time: AT, distance: stage.generate.DISTANCE, rating: Math.round( stage.generate.DISTANCE/AT ) } );
+		 
+		} else if( !scope.END ) {
+
+			CHECK = true
 			objective += 1
 
-		  }
-		}
+			};
+		};
 
-	}
+		scope.SPEED = Math.round( (speed*60/1000)*3600 )
 
-	this.getYen = function(){
+		if( scope.START && !scope.END ){
 
-		return YEN
-
-	}
-
-	this.getReward = function(){
-
-		return REWARD
-
-	}
-
-	this.getObjective = function(){
-
-		return objective
-
-	}
-
-	this.getTime = function(){
-
-		return AT
-
-	}
-
-	this.reset = function(){
-
-		DNF = false
-		stage.generate.resetCheckpoints()
-		if( this.END && CT.length === 4 && AT < stage.best[3]  ){
-
-		for( let i = 0; i < stage.best.length; i++)
-		  stage.best[i] = CT[i]
-		}
-
-		scope.UP = false
-		scope.DOWN = false
-		scope.LEFT = false
-		scope.RIGHT = false
-
-		this.START = false
-		this.END   = false
-
-		scope.position.copy(scope.start)
-		scope.last.copy(scope.position)
-		scope.rotation = 0
-		scope.vel.set(0,0,0)
-
-		scope.mesh.lookAt(scope.up.clone().add(scope.position))
-		scope.rig(scope.up)
-		renderer.clear()
-		objective = 0
-		timer = 0
-		startTime = performance.now()
-		this.TEXTTIME = '0.00'
-		ui.clear()
-		control.clear()
-		vhs.reset()
-		REWARD = 0
-
-		TIMEOUT = 0
-		TIMEOUTS = 0
-		CT = []
-		AT = 0
-		MENU = false
-
-
-	}
-
-	this.rig = function(up){
-
-
-		const cameraTarget = (!vhs.PLAY ) ? this.dir.clone() : new THREE.Vector3(-1.1,-1.1,0)
-		cameraTarget.multiplyScalar(-30)
-
-		cameraTarget.add( this.mesh.position )
-		cameraTarget.z += 15
-
-		let lerp = ( !vhs.PLAY ) ? 0.8 : 0.02
-
-		if( !this.END || vhs.PLAY ){
-
-			camera.position.lerp( cameraTarget, lerp)
+			AT = Math.floor( ( window.performance.now() - STARTTIME )/10 )/100
 
 		}
 
-		camera.lookAt(this.position)
+		scope.TEXTTIME = ui.getTextFloat( AT );
+		scope.OBJECTIVE = objective;
 
-	}
+	};
 
-	this.getCT = function(){
+	function rig(){
 
-		return CT
+		let lerp = ( DNF || scope.END ) ? 0.00001 : 0.1;
+		const p = direction.clone();
+		p.multiplyScalar( -20 );
+		p.add( mesh.position );
+		p.z += 7;
+		camera.position.lerp( p, lerp );
 
-	}
+		camera.lookAt( mesh.position );
 
-	this.emit = function(){
+	};
 
-		if( this.UP ){
+	function emit(){
+
+		// Reference control to play animation in DNF
+
+		if( U ){
 
 			let i = 0;
 			while( i < 1 ){
 
-				this.emitter.geometry.vertices[emitterCount].copy(this.dir)
-				this.emitter.geometry.vertices[emitterCount].multiplyScalar( -1 - ( Math.random() * this.vel.length() ) )
-				this.emitter.geometry.vertices[emitterCount].add(this.position)
+				emitter.geometry.vertices[emitterCount].copy( direction )
+				emitter.geometry.vertices[emitterCount].multiplyScalar( -1 - ( Math.random() * speed ) )
+				emitter.geometry.vertices[emitterCount].add( position )
 
-				this.emitter.geometry.vertices[emitterCount].life = this.emitter.geometry.vertices[emitterCount].maxLife
+				emitter.geometry.vertices[emitterCount].life = emitter.geometry.vertices[emitterCount].maxLife
 				const rx = Math.random()+0.5
 				const ry = Math.random()+0.5
 				const rz = Math.random()+0.5
 
 				const r = -Math.random()*0.1
 
-				this.emitter.geometry.vertices[emitterCount].acc.copy(this.dir)
-				this.emitter.geometry.vertices[emitterCount].acc.multiplyScalar(r)
+				emitter.geometry.vertices[emitterCount].acc.copy( direction )
+				emitter.geometry.vertices[emitterCount].acc.multiplyScalar(r)
 
 				emitterCount ++
-				emitterCount %= this.emitter.geometry.vertices.length
+				emitterCount %= emitter.geometry.vertices.length
 				i++
 
 			}
 
 		}
 
-		for( var i in this.emitter.geometry.vertices ){
+		for( var i in emitter.geometry.vertices ){
 
-			if(this.emitter.geometry.vertices[i].life > 0){
+			if(emitter.geometry.vertices[i].life > 0){
 
-				this.emitter.geometry.vertices[i].add(this.emitter.geometry.vertices[i].acc)
-				this.emitter.geometry.vertices[i].life -= 1
-				this.emitter.geometry.colors[i].setHSL(0,0,this.emitter.geometry.vertices[i].life/100)
+				emitter.geometry.vertices[i].add(emitter.geometry.vertices[i].acc)
+				emitter.geometry.vertices[i].life -= 1
+				emitter.geometry.colors[i].setHSL(0,0,emitter.geometry.vertices[i].life/100)
 
 			}
 
-			if(this.emitter.geometry.vertices[i].life === 0){
+			if(emitter.geometry.vertices[i].life === 0){
 
-			  this.emitter.geometry.vertices[i].set(0,0,0)
-			  this.emitter.geometry.vertices[emitterCount].acc.x = 0
-			  this.emitter.geometry.vertices[emitterCount].acc.y = 0
-			  this.emitter.geometry.vertices[emitterCount].acc.z = 0
+			  emitter.geometry.vertices[i].set(0,0,0)
+			  emitter.geometry.vertices[emitterCount].acc.x = 0
+			  emitter.geometry.vertices[emitterCount].acc.y = 0
+			  emitter.geometry.vertices[emitterCount].acc.z = 0
 
 			}
 
 		}
 
-		this.emitter.geometry.verticesNeedUpdate = true
-		this.emitter.geometry.colorsNeedUpdate = true
-		this.emitter.geometry.computeBoundingSphere();
+		emitter.geometry.verticesNeedUpdate = true
+		emitter.geometry.colorsNeedUpdate = true
+		emitter.geometry.computeBoundingSphere();
 
 	}
+	this.tune = function( p ){
 
-	this.display = function(){
+		if( p.power != undefined && p.power > 0 && p.power < 1 ) param.power = p.power;
+		if( p.drag != undefined && p.drag > 0 && p.drag < 1 ) param.drag = p.drag;
+		if( p.sensitivity != undefined && p.sensitivity > 0 && p.sensitivity < 1 ) param.sensitivity = p.sensitivity;
+		if( p.ease != undefined ) param.ease = p.ease;
 
-		for( let i = 0; i < CT.length; i++ ){
+		power = limits.power.lo + param.power * ( limits.power.hi - limits.power.lo );
+		drag = limits.drag.lo + ( param.drag + 0.1 ) * ( limits.drag.hi - limits.drag.lo );
+		sensitivity = limits.sensitivity.lo + ( param.sensitivity + 0.1 ) * ( limits.sensitivity.hi - limits.sensitivity.lo );
+		ease = param.ease;
 
-			let n = i+1
-			let text = 'cp' + n
-			let cp = ui.getTextFloat( CT[i] )
-			while( text.length < 16-cp.length ){
+	};
 
-				text += ' '
+	this.getParam = function(){
 
-			}
+		return param;
+		
+	};
 
-			text += cp
-
-			ui.textbox( text , 2, 6+i*2 )
-
-			let rank = ui.getTextFloat( ( stage.best[i]-CT[i] ), true )
-			ui.textbox( rank, Math.floor(ui.xl-2-16+(16-rank.length)), 6+i*2 )
-
-		}
-
-	}
-
-}
+};
