@@ -12,36 +12,40 @@ function Control(){
 
   this.touches = []
     
-  this.connect = function(){
-    
-    if( this.MOBILE ){
-		window.addEventListener('touchstart', scope.touch, false)
-		window.addEventListener('touchmove',  scope.touch, false)
-		window.addEventListener('touchend',   scope.touch, false)
-    }
-    else{
-		window.addEventListener('keydown',    scope.key, false)
-		window.addEventListener('keyup',      scope.key, false)
-		window.addEventListener('mousedown',  scope.mousedown )
-		window.addEventListener('mouseup',    scope.mouseup, false )
-    	window.addEventListener('touchstart', scope.touchSetup, false)
-    }
+	this.connect = function(){
 
-  }
+		if( this.MOBILE ){
 
-  this.disconnect = function(){
+			window.addEventListener( 'touchstart', scope.touch, false);
+			window.addEventListener( 'touchmove',  scope.touch, false);
+			window.addEventListener( 'touchend',   scope.touch, false);
 
-    window.removeEventListener('keydown',   scope.key, false)
-    window.removeEventListener('keyup',     scope.key, false)
-	window.removeEventListener('mousedown', scope.mousedown, false )
-	window.removeEventListener('mouseup',   scope.mouseup, false )
+		}
+		else{
 
-    window.removeEventListener('touchstart', scope.touchSetup, false)
-    window.removeEventListener('touchstart', scope.touch, false)
-    window.removeEventListener('touchmove',  scope.touch, false)
-    window.removeEventListener('touchend',   scope.touch, false)
-    
-  }
+			window.addEventListener( 'keydown',    scope.key, false );
+			window.addEventListener( 'keyup',      scope.key, false );
+			window.addEventListener( 'mousedown',  scope.mousedown );
+			window.addEventListener( 'mouseup',    scope.mouseup, false );
+			window.addEventListener( 'touchstart', scope.touchSetup, false );
+
+		}
+
+	}
+
+	this.disconnect = function(){
+
+		window.removeEventListener('keydown',   scope.key, false);
+		window.removeEventListener('keyup',     scope.key, false);
+		window.removeEventListener('mousedown', scope.mousedown, false );
+		window.removeEventListener('mouseup',   scope.mouseup, false );
+
+		window.removeEventListener('touchstart', scope.touchSetup, false);
+		window.removeEventListener('touchstart', scope.touch, false);
+		window.removeEventListener('touchmove',  scope.touch, false);
+		window.removeEventListener('touchend',   scope.touch, false);
+
+	}
 
   this.key = function(event){
 
@@ -84,77 +88,92 @@ function Control(){
     }
   }
 
-  this.mousedown = function( event ){
-  	scope.touches[0] = { x: event.clientX, y: event.clientY, start: true } 
-  }
+	this.mousedown = function( event ){
 
-  this.mouseup = function( event ){
-  	scope.touches[0] = { x: event.clientX, y: event.clientY, start: false } 
-  }
+		event.preventDefault();
 
-  this.touchSetup = function( event ){
+		scope.touches[0] = { x: event.clientX, y: event.clientY, start: true } 
 
-  	window.removeEventListener( 'keydown',   scope.key, false )
-  	window.removeEventListener( 'keyup',     scope.key, false )
-  	window.removeEventListener( 'keyup',     scope.key, false )
-	window.removeEventListener('mousedown', scope.mousedown, false )
-	window.removeEventListener('mouseup',   scope.mouseup, false )
+	}
 
-    window.removeEventListener('touchstart', scope.touchSetup, false)
+	this.mouseup = function( event ){
 
-    window.addEventListener('touchstart', scope.touchstart, false)
-    window.addEventListener('touchmove',  scope.touchmove, false)
-    window.addEventListener('touchend',   scope.touchend, false)
+		event.preventDefault();
 
-	scope.touchstart( event )
+		scope.touches[0] = { x: event.clientX, y: event.clientY, start: false }
 
-  }
+	}
 
-  this.clear = function(){
-  	scope.touches = []
+	this.touchSetup = function( event ){
 
-	  this.UP     = false
-	  this.DOWN   = false
-	  this.LEFT   = false
-	  this.RIGHT  = false
-	  this.ENTER  = false
-  
-  }
+		window.removeEventListener( 'keydown',   scope.key, false );
+		window.removeEventListener( 'keyup',     scope.key, false );
+		window.removeEventListener( 'keyup',     scope.key, false );
+		window.removeEventListener('mousedown', scope.mousedown, false );
+		window.removeEventListener('mouseup',   scope.mouseup, false );
 
-  this.touchstart = function( event ){
+		window.removeEventListener('touchstart', scope.touchSetup, false);
 
-	const touches = event.touches
+		window.addEventListener('touchstart', scope.touchstart, false);
+		window.addEventListener('touchmove',  scope.touchmove, false);
+		window.addEventListener('touchend',   scope.touchend, false);
 
-	scope.touches = []
+		scope.touchstart( event )
 
-  	for( let i = 0; i < touches.length; i++ ){
-  		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, start: true }
-  	}
+	}
 
-  }
+	this.clear = function(){
 
-  this.touchmove = function( event ){
+	scope.touches = [];
 
-	scope.touches = []
+		this.UP     = false;
+		this.DOWN   = false;
+		this.LEFT   = false;
+		this.RIGHT   = false;
+		this.ENTER  = false;
 
-	const touches = event.touches
+	}
 
-  	for( let i = 0; i < touches.length; i++ ){
-  		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, start: false }
-  	}
+	this.touchstart = function( event ){
 
-  }
+		const touches = event.touches
 
-  this.touchend = function( event ){
+		scope.touches = []
 
-	scope.touches = []
-	
-	const touches = event.touches
-	
-  	for( let i = 0; i < touches.length; i++ ){
-  		scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, start: false }
-  	}
+		for( let i = 0; i < touches.length; i++ ){
 
-  }
-  
-}
+			scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, start: true }
+
+		}
+
+	}
+
+	this.touchmove = function( event ){
+
+		scope.touches = []
+
+		const touches = event.touches
+
+		for( let i = 0; i  < touches.length; i++ ){
+
+			scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, start: false };
+
+		}
+
+	}
+
+	this.touchend = function( event ){
+
+		scope.touches = []
+
+		const touches = event.touches
+
+		for( let i = 0; i < touches.length; i++ ){
+
+			scope.touches[i] = { x: touches[i].clientX, y: touches[i].clientY, start: false };
+
+		}
+
+	}
+
+	}

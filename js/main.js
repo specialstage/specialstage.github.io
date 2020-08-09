@@ -1,6 +1,6 @@
 // P R O C E D U R A L . C A
 
-const BUILD = 'a-0001';
+const BUILD = '0.0.2 _ DEV 2';
 window.onload = init;
 window.onresize = resize;
 window.fullscreenchange = resize;
@@ -8,18 +8,20 @@ window.focus = resize;
 
 	let palette = [
 
-	0x101010, // BLACK
-	0xffffff, // WHITE
-	0xc1c1c1, // MID LIGHT
-	0x2c2c2c, // MID DARK
-	0x50ffae, // ACCENT GREEN
-	0xff7272, // ACCENT RED
-	0x2486ff, // STONE
-	0xff295a,
-	0x344234, // GRASS
-	0x219640, // EVERGREEN
-	0x6d6047, // SOIL
-	0x999999,
+	0x101010,	// 00 BLACK
+	0xffffff,	// 01 WHITE
+	0xc1c1c1,	// 02 MID LIGHT
+	0x2c2c2c,	// 03 MID DARK
+	0x50ffae,	// 04 ACCENT GREEN
+	0xff7272,	// 05 ACCENT RED
+	0x2486ff,	// 06 STONE
+	0xff295a,	// 07 ??
+	0x344234,	// 08 GRASS
+	0x219640,	// 09 EVERGREEN
+	0x6d6047,	// 10 SOIL
+	0x999999,	// 11 ??
+	0xffb0ea	// 12 SAKURA
+
 	];
 
 	for( let i in palette ){
@@ -33,7 +35,7 @@ let LOADSTATUS = 0;
 
 let SEED_NAME = '';
 let SEED = Math.floor( Math.random()*2147483647 )
-// SEED = 43311544;
+// SEED = 1967515738;
 let scene, camera, renderer, stage, vehicle, control, ui, vhs, state;
 
 let UP
@@ -53,18 +55,24 @@ let REASON		= 'out of bounds';
 let FULLSCREEN	= false;
 let MODE 		= 0;
 let LOAD 		= 0;
+let LOADING		= false;
 let MENU 		= false;
 let MOBILE 		= false;
 let CHALLENGE	= false;
 let	OBJECTIVES	= [];
+let UPDATES = [];
 
 let SCALE = 1;
+
+let RAFID = 0;
+
+let sakura;
 
 function init(){
 
 	decodeURL();
 	window.addEventListener('touchstart', activateTouch );
-	
+	window.addEventListener("contextmenu", function() { event.preventDefault() } );
 	scene = new THREE.Scene();
 	scene.background = BG;
 
@@ -82,164 +90,126 @@ function init(){
 	camera.name = 'Camera';
 	scene.add(camera);
 
-	renderer = new THREE.WebGLRenderer({logarithmicDepthBuffer: true, antialias: false });
+	renderer = new THREE.WebGLRenderer({ logarithmicDepthBuffer: true, antialias: false });
 	renderer.setClearColor(BG)
 	renderer.domElement.id = 'renderer';
-	document.body.appendChild(renderer.domElement)
+	document.body.appendChild(renderer.domElement);
 
-	let sponsor = document.createElement('a');
-	sponsor.href = 'https://ginko.ltd'
-	sponsor.id = 'sponsor';
-	sponsor.target = 'blank';
-	sponsor.style.top = '64px';
-	sponsor.style.width = '100%';
-	sponsor.style.height = '40px';
-	sponsor.style.display = 'block';
-	sponsor.style.position = 'fixed';
-	sponsor.style.zIndex = '999';
-	document.body.appendChild(sponsor)
+	control = new Control();
+	control.connect();
 
-	control = new Control()
-	control.connect()
+	ui = new UI();
 
-	ui = new UI()
-	ui.connect()
+	stage	= new Stage();
+	vehicle = new Vehicle();
+	vhs		= new VHS();
+	state	= new State();
 
-	stage	= new Stage()
-	vehicle = new Vehicle()
-	vhs		= new VHS()
-	state	= new State()
+	resize();
 
-	resize()
 
-	state.start()
+	ui.onload = function(){
+
+	sakura = new THREE.LineSegments(
+
+		stage.generate.sakura(),
+		new THREE.LineBasicMaterial( { vertexColors: true })
+
+	)
+	
+	
+	sakura.geometry.colorsNeedUpdate = true;
+// 	sakura.geometry.center();
+	sakura.position.z -= 5;
+
+	scene.add( sakura);
+
+	camera.position.set(0,25,10);
+	camera.lookAt( 0,0,0 );
+
+		main();
+		state.intro();
+
+	}
 
 }
 
 function activateTouch(){
 
-	MOBILE = true
-	window.removeEventListener('touchstart', activateTouch)
+	MOBILE = true;
+	window.removeEventListener('touchstart', activateTouch);
 
 }
 
-function resize(){
+function resize( scale = 1){
 
-	// Scale pixel ratio to nearest integer value
+	scale = ( window.innerWidth > 640 && window.innerHeight > 640 ) ? 2 : 1;
 
-	let meta = document.querySelector("meta[name=viewport]")
-	let viewport = (1 / window.devicePixelRatio) * Math.round( window.devicePixelRatio );
+	let width = window.innerWidth/scale;
+	let height = window.innerHeight/scale;
 
-	console.log( viewport )
-	meta.setAttribute(
-	'content', 'width=device-width, initial-scale=' + viewport + ',maximum-scale=1.0, user-scalable=0'
-	);
+	renderer.clear();
+	renderer.setSize( width, height );
+	renderer.domElement.style.zoom = scale;
 
-	const w = window.innerWidth/SCALE;
-	const h = window.innerHeight/SCALE;
-
-	renderer.clear()
-	renderer.setSize(w,h)
-
-	if ( camera.isPerspectiveCamera ){
-
-	  camera.aspect = w/h
-
-	}
-	else {
-
-	  camera.top    = h/-2
-	  camera.bottom = h/2
-	  camera.left   = w/-2
-	  camera.right  = w/2
-
-	}
-
-	camera.updateProjectionMatrix()
-	ui.resize()
-
-}
-
-function menu(){
-
-  	ui.button('   menu   ', function(){
-
-		ui.clear()
-		MENU = !MENU
-		if( !MENU && PLAY ) vehicle.display()
-		menu()
-		if( !vhs.PLAY || vehicle.END ) state.instruments()
-
-  	}, ui.xl-8, 0, 8, 6, true, false )
+	camera.aspect = width / height;
+	camera.updateProjectionMatrix();
+	
+	ui.resize( width, height, scale );
+	state.resize( width, height, scale );
 
 }
 
 function main(){
 
-	const id = window.requestAnimationFrame( main )
-	let time = window.performance.now()
+	RAFID = window.requestAnimationFrame( main );
+	let time = window.performance.now();
 
-	FPS  = time - TIME
-	TIME = time
-	FPS = Math.round( 100/FPS )*10
-
+	FPS  = time - TIME;
+	TIME = time;
+	FPS = Math.round( 100/FPS )*10;
+  	
   	if( PLAY ){
 
-		vhs.record( vehicle )
-  		vehicle.update()
-		vehicle.display()
-		state.instruments();
+  		vehicle.update();
+		vhs.record( vehicle );
 
-		if( MOBILE && !MENU ){
+		if( !MENU ){
 
-			ui.dpad()
-
-		}
-		if( vehicle.END && vehicle.OBJECTIVE == 0 && MENU){
-
-			state.results()
-			TIMEOUT++
-
-			if( TIMEOUT > 300 ){
-
-				PLAY = false
-				vhs.PLAY = true
-				ui.clear()
-				
-			}
-
-		}
-		else if( MENU ){
-
-			state.pause()
+  			state.update();
 
 		}
 
-		if( !DNF ) {
-			menu()
+		if( MOBILE && !MENU && !DNF ){
+
+			ui.dpad();
+
 		}
 
   	}
   	else if( vhs.PLAY ){
 
-  		vhs.play( vehicle )
-
-  		if( MENU ){
-
-  			state.results()
-
-  		}
-  		
-		if( vhs.PLAY ) menu()
+		vhs.play( vehicle );
 
   	}
-  	else if( stage.generate.END === true ){
-  		
-		state.readycheck()
+  	else if( LOADING ){
+
+		camera.position.applyAxisAngle( camera.up, 0.01 );
+		camera.lookAt( new THREE.Vector3(), 0,0,0 );
+		
+		state.loading();
 
   	}
-  	
-	renderer.render( scene, camera )
+  	else{
+
+		camera.position.applyAxisAngle( camera.up, 0.01 );
+		camera.lookAt( new THREE.Vector3(), 0,0,0 );
+
+  	}
+
+	renderer.render( scene, camera );
+
+	ui.update( control.touches );
 
 }
 

@@ -198,3 +198,51 @@ Planned
 		Redeuce redraw updates
 
 	Stage Editor
+
+-
+
+2020
+
+-
+
+July 15, 2020
+
+Movedto the Ginko.ltd studio to accelerate development.
+
+-
+
+July 16, 2020
+
+Started Procedural.ca
+
+-
+
+July 31, 2020
+
+Currently working on UI rebuild for 0.0.2
+
+Completed:
+
+> UI 
+> ASCII/UNICODE character to bitmap parser.
+> Basic buttons and touch pads.
+> Improved state handling
+> Re-mapped current game flow to new UI & state handler
+
+Required:
+
+> Control Settings State
+> Touch D-Pad Start Position Automation
+> Viewport Scaling
+> Menu Width
+> Rewards Prompt
+> Vehicle Selection UI
+> Fix URL Challenge
+> UI Coloring
+
+Abandoned:
+
+> Analog Stick
+> Easing Vehicle Modifier
+
+
