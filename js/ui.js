@@ -1,542 +1,296 @@
-function UI() {
+function UI(){
+  
+  const scope = this
+  this.load   = false
 
-	let url = './img/STAGE_8PX.png'
-	const scope = this;
+  const url = './js/ui.png'
+  
+  const canvas = document.createElement( 'canvas' )
+  canvas.id = 'ui'
 
-	this.renderer = document.createElement('canvas');
-	this.renderer.id = 'ui';
+  document.body.appendChild( canvas )
+  
+  const context = canvas.getContext('2d')
+  context.imageSmoothingEnabled = false;
 
-	document.body.appendChild(this.renderer);
+  const sheet = document.createElement('img')
+  sheet.src = url
+  
+  sheet.onload = function(){
+    scope.load = true
+  }
+  
+  const grid   = []
+  this.xl = 0
+  this.yl = 0
+  const lookup = []
+  const size  = 8
+  const shift = 8
+  
+  let time    = window.performance.now() 
+  let dt      = 1
+  
+  this.connect = function(){
+    
+    this.xl = Math.floor(window.innerWidth/size)/SCALE
+    this.yl = Math.floor(window.innerHeight/size)/SCALE
+    
+    for( let x = 0; x < this.xl; x++ ){
+      grid[x] = []
+    for( let y = 0; y < this.yl; y++ ){
+      grid[x][y] = { x: x*size, y: y*size }
+    }
+    }
+    
+    // Numbers
+    lookup['0'] = { x:  0 * size, y: 0 }
+    lookup['1'] = { x:  1 * size, y: 0 }
+    lookup['2'] = { x:  2 * size, y: 0 }
+    lookup['3'] = { x:  3 * size, y: 0 }
+    lookup['4'] = { x:  4 * size, y: 0 }
+    lookup['5'] = { x:  5 * size, y: 0 }
+    lookup['6'] = { x:  6 * size, y: 0 }
+    lookup['7'] = { x:  7 * size, y: 0 }
+    lookup['8'] = { x:  8 * size, y: 0 }
+    lookup['9'] = { x:  9 * size, y: 0 }
+    lookup['.'] = { x: 10 * size, y: 0 }
+    lookup['+'] = { x: 12 * size, y: 0 }
+    lookup['-'] = { x: 13 * size, y: 0 }
+    lookup['L'] = { x: 14 * size, y: 0 }
+    lookup['R'] = { x: 15 * size, y: 0 }
+    lookup['U'] = { x: 16 * size, y: 0 }
+    lookup['D'] = { x: 17 * size, y: 0 }
 
-	const context = this.renderer.getContext('2d');
-	this.context = context;
+    // Alphabet
+    lookup['a'] = { x:  0 * size, y: shift }
+    lookup['b'] = { x:  1 * size, y: shift }
+    lookup['c'] = { x:  2 * size, y: shift }
+    lookup['d'] = { x:  3 * size, y: shift }
+    lookup['e'] = { x:  4 * size, y: shift }
+    lookup['f'] = { x:  5 * size, y: shift }
+    lookup['g'] = { x:  6 * size, y: shift }
+    lookup['h'] = { x:  7 * size, y: shift }
+    lookup['i'] = { x:  8 * size, y: shift }
+    lookup['j'] = { x:  9 * size, y: shift }
+    lookup['k'] = { x: 10 * size, y: shift }
+    lookup['l'] = { x: 11 * size, y: shift }
+    lookup['m'] = { x: 12 * size, y: shift }
+    lookup['n'] = { x: 13 * size, y: shift }
+    lookup['o'] = { x: 14 * size, y: shift }
+    lookup['p'] = { x: 15 * size, y: shift }
+    lookup['q'] = { x: 16 * size, y: shift }
+    lookup['r'] = { x: 17 * size, y: shift }
+    lookup['s'] = { x: 18 * size, y: shift }
+    lookup['t'] = { x: 19 * size, y: shift }
+    lookup['u'] = { x: 20 * size, y: shift }
+    lookup['v'] = { x: 21 * size, y: shift }
+    lookup['w'] = { x: 22 * size, y: shift }
+    lookup['x'] = { x: 23 * size, y: shift }
+    lookup['y'] = { x: 24 * size, y: shift }
+    lookup['z'] = { x: 25 * size, y: shift }
+    lookup[' '] = { x: 26 * size, y: 48 }
+    
+    lookup['U'] = { x: 0 * size, y: 24 }
+    lookup['D'] = { x: 1 * size, y: 24 }
+    lookup['L'] = { x: 2 * size, y: 24 }
+    lookup['R'] = { x: 3 * size, y: 24 }
+    lookup['Y'] = { x: 0 * size, y: 16 }
 
-	const bitmap = document.createElement('img');
-	bitmap.src = url;
-	bitmap.onload = function() {
-		scope.connect();
-		scope.onload();
+    window.addEventListener( 'mouseup'  , scope.mouseup )
+    window.addEventListener( 'touchstart' , scope.touchsetup )
+
+  }
+  
+  this.resize = function(){
+    canvas.width  = window.innerWidth/SCALE;
+    canvas.height = window.innerHeight/SCALE;
+
+    this.xl = Math.floor(window.innerWidth/size)/SCALE
+    this.yl = Math.floor(window.innerHeight/size)/SCALE
+    
+    for( let x = 0; x < this.xl; x++ ){
+      grid[x] = []
+    for( let y = 0; y < this.yl; y++ ){
+      grid[x][y] = { x: x*size, y: y*size }
+    }
+    }
+    
+    if( MENU || PLAY ) vehicle.display()
+  }
+  
+  this.clear = function(){
+    context.clearRect( 0,0, canvas.width, canvas.height)
+  }
+  
+  this.textbox = function( input, x_, y_ ){
+  
+    let x = grid[x_][y_].x
+    let y = grid[x_][y_].y
+    context.beginPath()
+    context.clearRect( x, y, input.length * size+size, size )
+
+    for( let i in input ){
+      context.drawImage( sheet, lookup[input.charAt(i)].x, lookup[input.charAt(i)].y, size, size, x+i*size, y, size, size )
+    }
+    context.closePath()
+  }
+  
+  this.button = function( label, action, x_, y_, w, h, TOGGLE, OUTLINE ){
+
+  	if( TOGGLE == undefined ) TOGGLE = false
+    if( OUTLINE == undefined ) OUTLINE = true
+
+    const width = label.length * size
+    
+    let x = grid[x_][y_].x
+    let y = grid[x_][y_].y
+    
+//     context.beginPath()
+//     if( UPDATE ){
+//     context.clearRect( x, y-size, size * w + size, size * h )
+//     }
+
+	if( OUTLINE ){
+// 	context.clearRect( x, y, w*size, h*size+size )
+// 	context.save()
+// 	context.fillStyle = '#101010'
+// 	context.globalAlpha = 0.5
+// 	context.fillRect( x, y, w*size, h*size+size)
+// 	context.restore()
+
+    context.drawImage(
+      sheet,
+      0,
+      64,
+      1,
+      1,
+      x,
+      y,
+      ( size )*w,
+      1
+    )
+
+    context.drawImage(
+      sheet,
+      0,
+      64,
+      1,
+      1,
+      x,
+      y+size+size*h,
+      size*w,
+      1
+    )
+
+    context.drawImage(
+      sheet,
+      0,
+      64,
+      1,
+      1,
+      x,
+      y,
+      1,
+      size+size*h+1
+    )
+
+    context.drawImage(
+      sheet,
+      0,
+      64,
+      1,
+      1,
+      x+w*size,
+      y,
+      1,
+      size+size*h+1
+    )
 	}
-	;
+    
+    for( let i in label ){
+      context.drawImage(
+        sheet,
+        lookup[label.charAt(i)].x,
+        lookup[label.charAt(i)].y,
+        size,
+        size,
+        Math.floor(w*size/2) + ( x+i*size ) - Math.floor(width/2) + size/2,
+        y+(h*size)/2,
+        size,
+        size )
+    }
 
-	const buffer = document.createElement('canvas');
+    context.closePath()
+    
+    touches = control.touches 
 
-	this.onload = function() {}
+	for( let i in touches ){
+	if( touches[i].x/SCALE > x && touches[i].x/SCALE < x+size*w/SCALE && touches[i].y/SCALE > y && touches[i].y/SCALE < y + size*h+size ){
 
-	const font = document.createElement('canvas');
-	const filter = font.getContext('2d');
-
-	// Renderer parameters.
-
-	this.scale = 1;
-
-	// Navigation parameters.
-
-	this.col = 8;
-	this.row = 8;
-
-	this.width;
-	this.height;
-
-	const sheet = {
-
-		unit: 8,
-		width: 128,
-		height: 128,
-		cols: 16,
-		rows: 16,
-
+	  if( TOGGLE & touches[i].start === true ){
+	  touches[i].start = false
+	  action()
+	  }
+	  else if( !TOGGLE ){
+	  action()
+	  }
+	}
 	}
 
-	let dpad = {};
+  }
+  
+  this.dpad = function(){
 
-// 	dpad.d = { x: 128, y: 156, w: 128, h: 128 }
-// 	dpad.a = { x: 128, y: 156, w: 128, h: 128 }
-// 	dpad.b = { x: 0, y: 156, w: 128, h: 128 }
+  	control.LEFT 	= false
+	control.UP		= false
+  	control.DOWN 	= false
+  	control.RIGHT 	= false
 
-	// Redrawing variables
+  	let xl = Math.floor(scope.xl/3)
+  	let right = scope.xl-2-xl*2
 
-	let REDRAW = false;
-	let redraw = [];
-	let buttons = [];
+    this.button('L', function(){ control.LEFT = true  }, 1, scope.yl-24, xl-1,  8, false )
+    this.button('R', function(){ control.RIGHT = true }, xl+1, scope.yl-24, xl-1, 8, false )
 
-	// Controls
+    this.button('U', function(){ control.UP = true    }, xl*2+1, scope.yl-24, right, 8, false )
+    this.button('D', function(){ control.DOWN = true  }, xl*2+1, scope.yl-14, right, 8, false )
+    
+  }
 
-	let analog = {
+this.getTextFloat = function( input, sign ){
 
-		value:		0,
-		deadzone:	2,
-		range: 64,
-		active: false,
-		x: 0,
-		y: 0,
-		start: { x: 0, y: 0 },
-		touch: { x: 0, y: 0 },
+	let text = Math.floor( Math.abs( input * 100 ) )
+	text = text.toString()
 
-	}
+	let integer = text.slice( 0,text.length-2 )
+	let float 	= text.slice( text.length-2,text.length )
 
-	this.connect = function() {
-
-		context.imageSmoothingEnabled = false;
-
-		font.width = bitmap.width;
-		font.height = bitmap.height;
-
-		// Copy font image to new canvas.
-
-		filter.drawImage(
-		bitmap, 0, 0, font.width, font.height, 0, 0, font.width, font.height
-		);
-
-	}
-
-	this.resize = function( width, height, scale ) {
-
-		// Round the devicePixelRatio and resize the viewport to prevent sub-pixel rendering.
-
-		let meta = document.querySelector("meta[name=viewport]")
-		let viewport = (1 / window.devicePixelRatio) * Math.round(window.devicePixelRatio);
-
-		let w = Math.floor( window.innerWidth * viewport );
-
-// 		if ( w > 720 ) w *= 2;
-
-		meta.setAttribute('content', 'width=' + w + ', initial-scale=' + viewport + ',maximum-scale=' + '4.0' + ', user-scalable=0');
-
-		// Create scaled width & height targets.
-
-		scope.scale = scale;
-		this.width = width;
-		this.height = height;
-
-		this.renderer.width = width;
-		this.renderer.height = height;
-
-		// Scale the context & disable smoothing.
-		this.renderer.style.zoom = scale;
-// 		context.scale( scope.scale, scope.scale );
-		context.imageSmoothingEnabled = false;
-
-		this.redraw();
-
-		dpad.d = { x: 128, y: 160, w: 128, h: 128 }
-		dpad.a = { x: 128, y: 160, w: 128, h: 128 }
-		dpad.b = { x: 0, y: 160, w: 128, h: 128 }
-
-		this.automate( width, height );
-
-	}
+	if( input == 0 ){
 	
-	this.update = function( inputs ){
-
-		for( let i in inputs ){
-
-		for( let b in buttons ){
-
-			if( inputs[i].x > buttons[b].x * scope.scale &&
-			inputs[i].y > buttons[b].y * scope.scale &&
-			inputs[i].x < buttons[b].w * scope.scale &&
-			inputs[i].y < buttons[b].h * scope.scale &&
-			inputs[i].start == true
-			){
-
-				buttons[b].funct();
-				inputs[i].start = false;
-				break;
-
-			}
-
-		}
-
-
-		}
-
+		return( '0.00' )
 
 	}
+	else{
 
-	this.print = function( str, _x, _y, scale=1 ) {
-
-		let i = 0;
-
-		let x = scope.compile(_x, scope.width, scope.col);
-		let y = scope.compile(_y, scope.height, scope.row);
-
-		while (i < str.length) {
-
-			scope.encode(str.charAt(i), x + (i * scope.col * scale), y, scale);
-			i++;
-
+		if( integer.length == 0 ){
+			integer = '0'
+		}
+		if( float.length < 2 ){
+			float += '0'
 		}
 
-		if ( !REDRAW ) {
-
-			redraw.push( function() {
-
-				scope.print(str, _x, _y, scale);
-
-			});
-
+		if( sign && input > 0 ){
+			integer = '+' + integer
+		}
+		else if( input < 0 ){
+			integer = '-' + integer
 		}
 
-	}
+		text = integer + '.' + float
 
-	this.text = function( str, _x, _y,  scale=1, length = 0 ){
-
-// 		this.clear( _x, _y, str.length * scope.col, scope.row );
-
-		let i = 0;
-
-		while (i < str.length) {
-
-			scope.encode( str.charAt(i), _x + (i * scope.col * scale), _y, scale );
-			i++;
-
-		}
+		return text
 
 	}
+}
 
-	this.button = function( str, _x, _y, _w, _h, funct, border=true, scale=1 ) {
-
-		let x = scope.compile(_x, scope.width, scope.col);
-		let y = scope.compile(_y, scope.height, scope.row);
-
-		let w = scope.compile(_w, scope.width, scope.col);
-		let h = scope.compile(_h, scope.height, scope.row);
-
-		if (border) {
-
-			context.drawImage(font, 0, 0, 1, 1, x, y+h/2, w+1, 1);
-			context.drawImage(font, 0, 0, 1, 1, x, y-h/2, w+1, 1);
-			context.drawImage(font, 0, 0, 1, 1, x, y-h/2, 1, h);
-			context.drawImage(font, 0, 0, 1, 1, x+w, y-h/2, 1, h);
-
-		}
-
-		let i = 0;
-
-		let center = w/2
-
-		while (i < str.length) {
-
-			scope.encode(str.charAt(i), x + (i * scope.col ) + w/2 - Math.round( str.length * scope.col )/2 + 2, y - scope.row/2, scale);
-			i++;
-
-		}
-
-		buttons.push( { x: x, y: y-h/2, w: x+w, h: y+h/2, funct: function(){ funct() } } );
-
-		if ( !REDRAW ) {
-
-			redraw.push( function() {
-
-				scope.button(str, _x, _y, _w, _h, funct, border, scale );
-
-			});
-
-		}
-
-	}
-
-	this.line = function( x, y, w, h,) {
-
-		scope.sprite( 0, 0, 1, 1, x, y, w, h );
-
-	}
-
-	this.sprite = function( sx, sy, sw, sh, _x, _y, _w, _h ) {
-
-		let x = scope.compile(_x, scope.width, scope.col);
-		let y = scope.compile(_y, scope.height, scope.row);
-
-		let w = scope.compile(_w, scope.width, scope.col);
-		let h = scope.compile(_h, scope.height, scope.row);
-
-// 		context.clearRect(x, y, w, h);
-		context.drawImage(font, sx, sy, sw, sh, x, y, w, h);
-
-		if (!REDRAW) {
-
-			redraw.push( function() {
-
-				scope.sprite(sx, sy, sw, sh, _x, _y, _w, _h);
-
-			});
-
-		}
-
-	}
-
-	this.getDrawList = function() {
-
-		return redraw;
-
-	}
-
-	this.redraw = function() {
-
-		REDRAW = true;
-
-		scope.clear();
-
-		for (let i = 0; i < redraw.length; i++) {
-
-			redraw[i]();
-
-		}
-
-		REDRAW = false;
-
-	}
-
-	this.automate = function( w, h ){
-
-		let x = Math.floor(w/3)-2
-		let y = Math.floor(h/4)+64
-
-		if( dpad.d.w > x ){
-
-			dpad.d.w = x
-			dpad.d.x = x
-
-			dpad.a.w = x
-			dpad.a.x = x
-
-		}
-
-		if( dpad.d.y > y ){
-
-			dpad.a.y = y
-			dpad.d.y = y
-
-		}
-
-	}
-
-	this.pad = function( c, x, y, w, h, hold, release ){
-
-		let i = 0;
-
-		release();
-
-		while( i < control.touches.length ){;
-
-			if( control.touches[i].x > x * scope.scale &&
-			control.touches[i].y > y * scope.scale &&
-			control.touches[i].x < (x+w) * scope.scale &&
-			control.touches[i].y < (y+h) * scope.scale
-			){
-
-				hold();
-
-			}
-
-		i++;
-
-		}
-
-		// PAD HITBOX DEBUG
-
-// 		context.drawImage( font, 0, 0, 1, 1, x, y, w, 1 );
-// 		context.drawImage( font, 0, 0, 1, 1, x, y+h-1, w, 1 );
-
-// 		context.drawImage( font, 0, 0, 1, 1, x, y+h/2, 6, 1 );
-// 		context.drawImage( font, 0, 0, 1, 1, x, y+h/2, 1, 6 );
-
-// 		context.drawImage( font, 0, 0, 1, 1, x+8, y+36, w-16, 1 );
-// 		context.drawImage( font, 0, 0, 1, 1, x+8, y+h-1-36, w-16, 1 );
-
-// 		context.drawImage( font, 0, 0, 1, 1, x+8, y+36, 1, h-72 );
-// 		context.drawImage( font, 0, 0, 1, 1, x+w-8, y+36, 1, h-72 );
-
-		scope.encode( c, x + w/2 - scope.col/2, y+h/2 - scope.row/2 );
-
-
-	}
-
-	this.dpad = function(){
-
-
-		let w = dpad.d.w/2-56/2-2
-
-		context.drawImage( font, 88, 88, 40, 40, scope.width-dpad.a.x+44, scope.height-dpad.a.y+44, 40, 40 );
-
-// 		context.drawImage( font, 0, 96, 16, 5, dpad.d.x-5, window.innerHeight-dpad.d.y+dpad.d.h/2+32, 16, 5 );
-// 		context.drawImage( font, 0, 100, 16, 6, dpad.d.x-5, window.innerHeight-dpad.d.y+dpad.d.h/2-32, 16, 6 );
-
-// 		context.drawImage( font, 0, 100, 6, 6, dpad.d.x+dpad.d.w-4, window.innerHeight-dpad.d.y+dpad.d.h/2-32, 6, 6 );
-// 		context.drawImage( font, 5, 100, 6, 6, dpad.d.x-dpad.d.w+4, window.innerHeight-dpad.d.y+dpad.d.h/2-32, 6, 6 );
-
-// 		context.drawImage( font, 0, 96, 16, 16, dpad.d.x-5, window.innerHeight-dpad.d.y+dpad.d.h/2-5, 16, 16 );
-
-		scope.pad( '<', dpad.d.x-dpad.d.w-1, scope.height-dpad.d.y, dpad.d.w, dpad.d.h,
-
-			function(){ control.LEFT = true },
-			function(){ control.LEFT = false }
-
-		);
-
-		scope.pad( '>', dpad.d.x+1, scope.height-dpad.d.y, dpad.d.w, dpad.d.h,
-
-			function(){ control.RIGHT = true },
-			function(){ control.RIGHT = false }
-
-		);
-		
-		scope.pad( '^', scope.width-dpad.a.x, scope.height-dpad.a.y, 128, 128,
-
-			function(){ control.UP = true },
-			function(){ control.UP = false }
-
-		);
-	}
-
-	this.clear = function() {
-
-		if ( !REDRAW ){ redraw = []; }
-
-		buttons = []; 
-
-		context.clearRect(0, 0, scope.width, scope.height);
-		context.beginPath();
-
-	}
-
-	this.delete = function(x=0, y=0, w=renderer.width, h=renderer.height) {
-
-		context.clearRect(x, y, w, h);
-
-	}
-
-	this.encode = function(char, x, y, scale=1) {
-
-		let n = char.charCodeAt(0);
-
-		let sx = (n * sheet.unit) % sheet.width;
-		let sy = Math.floor(n / sheet.cols) * sheet.unit;
-
-		context.clearRect(x, y, sheet.unit, sheet.unit);
-		context.drawImage(font, sx, sy, sheet.unit, sheet.unit, x, y, sheet.unit * scale, sheet.unit * scale);
-
-	}
-
-	this.float = function( input, sign ){
-
-		let text = Math.floor( Math.abs( input * 100 ) )
-		text = text.toString()
-
-		let integer = text.slice( 0,text.length-2 )
-		let float 	= text.slice( text.length-2,text.length )
-
-		if( input == 0 ){
-
-			return( '0.00' )
-
-		}
-		else{
-
-			if( integer.length == 0 ){
-				integer = '0'
-			}
-			if( float.length < 2 ){
-				float += '0'
-			}
-
-			if( sign && input > 0 ){
-				integer = '+' + integer
-			}
-			else if( input < 0 ){
-				integer = '-' + integer
-			}
-
-			text = integer + '.' + float
-
-			return text
-
-		}
-	}
-
-	this.compile = function(input, range, unit) {
-
-		let out = 0;
-
-		switch (typeof input) {
-
-		case ('number'):
-
-			out = input;
-
-			break;
-
-		case ('function'):
-
-			out = input();
-
-			break;
-
-		case ('string'):
-
-			let float = false;
-			let sign = 1.0;
-			let i = 0;
-			let n = '';
-
-			while (i < input.length) {
-
-				let c = input.charAt(i);
-
-				if (c === '.') {
-
-					n += c;
-					float = true;
-
-				} else if (c === '+') {
-
-					n = (float) ? Number(n) * range : Number(n) * unit;
-					n *= sign;
-					sign = 1.0;
-					out += n;
-					float = false;
-					n = ''
-
-				} else if (c === '-') {
-
-					n = (float) ? Number(n) * range : Number(n) * unit;
-					n *= sign;
-					sign = -1.0
-					out += n;
-					float = false;
-					n = ''
-
-				} else if (c === 'p') {
-
-					n = Number(n)
-					n *= sign;
-					out += n;
-					n = ''
-
-				} else if (i === input.length - 1) {
-
-					n += c;
-					n = (float) ? Number(n) * range : Number(n) * unit;
-					n *= sign;
-					out += n;
-					n = ''
-
-				} else {
-
-					n += c;
-
-				}
-
-				i++;
-
-			}
-
-			break;
-
-		}
-
-		return out;
-
-	}
 }

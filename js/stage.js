@@ -14,36 +14,15 @@ function Stage() {
 
 
 		for( let i = 0; i < 4; i++ ) {
-
 			this.checkpoint[ this.checkpoint.length ] = new THREE.Mesh( new THREE.Geometry() )
 		}
-		
 
-	this.connect = function( reset = false ){
+	this.connect = function(){
 		
-// 		ui.clear();
-
-		camera.position.set( 0, 400, 300 );
-		camera.far = 2000;
-		camera.updateProjectionMatrix();
+		ui.clear()
+		camera.position.set(0,0,1600)
 		camera.lookAt( new THREE.Vector3() )
 		renderer.render( scene, camera )
-
-		if( ! reset ){
-
-			this.name = this.generate.name();
-			let c = '';
-
-			for( let i in this.name ){
-
-			c += ( this.name.charCodeAt( i ) ).toString();
-
-			}
-
-			SEED = c;
-
-		}
-
 		this.generate.connect()
 		COUNTER++
 
@@ -56,18 +35,13 @@ function Stage() {
 		
 	}
 
-	this.reset = function( reset = false ){
-
-		SEED++;
+	this.reset = function(){
+		
+		SEED = Math.floor( Math.random()*2147483647 )
 		this.disconnect()
 		this.generate = new Generate()
-		this.connect( reset );
+		this.connect()
 		
-	}
-
-	this.preview = function(){
-
-		window.setTimeout( 0, 0, )
 	}
 
 }

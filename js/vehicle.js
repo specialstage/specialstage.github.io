@@ -11,28 +11,23 @@ function Vehicle(){
 	this.END = false;
 	this.OBJECTIVE = 0;
 	this.POSITION;
-	this.MODEL = 1;
-
-	this.ANALOG = false;
-
-	this.CAMERA = 1;
-	let CAMERA = 1;
 
 	// Controls
 
 	let U			= false;
 	let D			= false;
-	let A			= 0;
+	let L			= false;
+	let R			= false;
 	let ITEM		= false;
 	let SLIP		= false;
 	let CONTACT		= true;
-	let CONTROLS	= false;
+
 	// Time parameters
 	
 	let DT = 60; 
 	let AT = 0;
 	let CP = [];
-	let TIMEOUT = 60;
+	let TIMEOUT = 20;
 	let TIME = 0;
 	let STARTTIME = 0;
 
@@ -43,46 +38,36 @@ function Vehicle(){
 	let CHECK = false;
 // 	let DNF = false;
 
-// 	Initialization Parameters
+	// Initialization Parameters
 
 	const param = {
 
-		power:			2,
-		drag:			2,
+		power:			0.5,
+		drag:			0.8,
 		mass:			1.0,
-		brake:			3,
-		sensitivity:	2,
-// 		ease:			0,
+		brake:			1,
+		sensitivity:	0.8,
+		ease:			6,
 
 	};
-
-	
 
 	const limits = {
 
-		power:			{ lo: 0.015, hi: 0.02,	range: 0 },
-		drag:			{ lo: 0.98, hi: 0.985,	range: 0 },
-		brake:			{ lo: 0.98, hi: 0.95,	range: 0 },
-		sensitivity:	{ lo: 0.06,	hi: 0.08,	range: 0 },
-// 		ease:			{ lo: 6,	hi: 12,		range: 0 },
+		power:			{ lo: 0.01, hi: 0.02 },
+		drag:			{ lo: 0.98, hi: 0.985 },
+		brake:			{ lo: 0.98, hi: 0.95 },
+		sensitivity:	{ lo: 0.05,	hi: 0.07 },
+		ease:			{ lo: 6,	hi: 18 },
 
 	};
 
-	// COMPUTE RANGE LIMITS
+	// Active Parameters
 
-	limits.power.range			= limits.power.hi - limits.power.lo
-	limits.drag.range			= limits.drag.hi - limits.drag.lo
-	limits.brake.range			= limits.brake.hi - limits.brake.lo
-	limits.sensitivity.range	= limits.sensitivity.hi - limits.sensitivity.lo
-// 	limits.ease.range			= limits.ease.hi - limits.ease.lo
-
-	// ACTIVE PARAMETERS
-
-	let power;
-	let drag;
-	let sensitivity;
-	let ease = 6;
-	let brake = 0.98;
+	let power = limits.power.lo + param.power * ( limits.power.hi-limits.power.lo );
+	let drag = limits.drag.lo + ( param.drag + 0.1 ) * ( limits.drag.hi-limits.drag.lo );
+	let sensitivity = limits.sensitivity.lo + ( param.sensitivity + 0.1 ) * ( limits.sensitivity.hi-limits.sensitivity.lo );
+	let ease = param.ease;
+	let brake = limits.brake.lo + param.brake * ( limits.brake.hi-limits.brake.lo );
 	let speed;
 
 	let angle = 0;
@@ -116,119 +101,11 @@ function Vehicle(){
 	const ray       = new THREE.Vector3(0,0,1);
 	const raycaster	= new THREE.Raycaster( contact, ray, 0, 2 );
 
-	// Cameras
-
-	this.cameras = []
-
-	this.cameras[0] = { distance: 20, x: 0, y: 0, z: 7, lerp: 0.1, lookAt: new THREE.Vector3() }
-	this.cameras[1] = { distance: 0, x: 20, y: 20, z: 10, lerp: 0.05, lookAt: new THREE.Vector3() }
-	this.cameras[2] = { distance: 0, x: -30, y: -30, z: 20, lerp: 0.05, lookAt: new THREE.Vector3() }
-	this.cameras[3] = { distance: 0, x: -40, y:  40, z: 30, lerp: 0.075, lookAt: new THREE.Vector3() }
-	this.cameras[4] = { distance: 0, x: 0, y: -20, z: 60, lerp: 0.0075, lookAt: new THREE.Vector3() }
-
-	// Models
-
-	const models = [];
-
-	this.models = function(){
-
-		return models;
-
-	}
-
 	// Geometry
 
-	models[0] = new THREE.Geometry().fromBufferGeometry( new THREE.EdgesGeometry( new THREE.BoxGeometry( 1, 2, 1 ) ) );
-	models[0].name = 'logistics crate'
+	const geometry = new THREE.EdgesGeometry( new THREE.BoxGeometry( 1, 2, 1 ) );
 	const material = new THREE.MeshBasicMaterial();
-// 	const mesh = new THREE.LineSegments( geometry, material );
-
-	// Custom Geometry
-
-	models[1] = new THREE.Geometry();
-
-	const model = {
-
-		SIDE_FRONT: 0.3,
-		SIDE_BACK: 0.45,
-		BODY_FRONT:	1.2,
-		BODY_BACK: -0.75,
-		SIDE_WING: 1.0,
-		WING_BACK: -1.4,
-		WING_BOTTOM: 0.4,
-		TOP: 1,
-		BOTTOM: -0.1,
-
-	}
-
-	// SIDE BODY
-
-	models[1].vertices.push( new THREE.Vector3( model.SIDE_BACK, model.BODY_BACK, model.TOP ) );
-	models[1].vertices.push( new THREE.Vector3( model.SIDE_FRONT,  model.BODY_FRONT, model.TOP ) );
-
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_BACK, model.BODY_BACK, model.TOP ) );
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_FRONT,  model.BODY_FRONT, model.TOP ) );
-
-	// FRONT BACK BODY
-
-	models[1].vertices.push( new THREE.Vector3(  model.SIDE_FRONT, model.BODY_FRONT, model.TOP ) );
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_FRONT, model.BODY_FRONT, model.TOP ) );
-
-	models[1].vertices.push( new THREE.Vector3(  model.SIDE_BACK, model.BODY_BACK, model.TOP ) );
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_BACK, model.BODY_BACK, model.TOP ) );
-
-	// SIDE WINGS
-
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_FRONT, model.BODY_FRONT, model.TOP ) );
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_WING, model.BODY_BACK, model.BOTTOM ) );
-
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_BACK, model.BODY_BACK, model.TOP ) );
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_WING, model.BODY_BACK, model.BOTTOM ) );
-
-	models[1].vertices.push( new THREE.Vector3(  model.SIDE_FRONT, model.BODY_FRONT, model.TOP ) );
-	models[1].vertices.push( new THREE.Vector3( model.SIDE_WING, model.BODY_BACK, model.BOTTOM ) );
-
-	models[1].vertices.push( new THREE.Vector3(  model.SIDE_BACK, model.BODY_BACK, model.TOP ) );
-	models[1].vertices.push( new THREE.Vector3( model.SIDE_WING, model.BODY_BACK, model.BOTTOM ) );
-
-	// BACK WING
-
-	models[1].vertices.push( new THREE.Vector3(  model.SIDE_BACK, model.BODY_BACK, model.TOP ) );
-	models[1].vertices.push( new THREE.Vector3( model.SIDE_BACK, model.WING_BACK, model.WING_BOTTOM ) );
-
-	models[1].vertices.push( new THREE.Vector3(  -model.SIDE_BACK, model.BODY_BACK, model.TOP ) );
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_BACK, model.WING_BACK, model.WING_BOTTOM ) );
-
-	models[1].vertices.push( new THREE.Vector3( model.SIDE_BACK, model.WING_BACK, model.WING_BOTTOM ) );
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_BACK, model.WING_BACK, model.WING_BOTTOM ) );
-
-	models[1].vertices.push( new THREE.Vector3( model.SIDE_BACK, model.WING_BACK, model.WING_BOTTOM ) );
-	models[1].vertices.push( new THREE.Vector3( model.SIDE_WING, model.BODY_BACK, model.BOTTOM  ) );
-
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_BACK, model.WING_BACK, model.WING_BOTTOM ) );
-	models[1].vertices.push( new THREE.Vector3( -model.SIDE_WING, model.BODY_BACK, model.BOTTOM  ) );
-
-	models[1].center();
-
-	models[1].name = 'ag-86'
-
-	const master = new THREE.LineSegments( models[ scope.MODEL ].clone() , material );
-	const mesh = master.clone();
-
-// 	const highlight = new THREE.IcosahedronGeometry( 2, 0 );
-// 	highlight.scale( 1.2, 1.2, 1.2 );
-
-// 	mesh.add( new THREE.Mesh( highlight,
-
-// 		new THREE.MeshBasicMaterial( {
-
-// 			color: palette[4],
-// 			wireframe: true,
-// 			blending: THREE.AdditiveBlending,
-// 			transparent: true,
-			
-// 			} )
-// 			) );
+	const mesh = new THREE.LineSegments( geometry, material );
 
 	let emitterCount = 0;
 	const particles = new THREE.Geometry()
@@ -263,38 +140,26 @@ function Vehicle(){
 
 	this.connect = function( _start, surface ){
 
-		mesh.copy( new THREE.LineSegments( models[ scope.MODEL ].clone(), material ) ); 
-
 		start.copy( _start );
 		position.copy( start );
 		last.copy( position );
-
 		scene.add( mesh );
 		scene.add( emitter );
-
-		scope.tune.power();
-		scope.tune.drag();
-		scope.tune.sensitivity();
-// 		scope.tune.ease();
 
 		scene.fog = new THREE.FogExp2( palette[0], 0.01 );
 
 		camera.fov = 90;
-// 		camera.far = 200;
 		camera.updateProjectionMatrix();
 
 		scene.add( stage.generate.stars );
-		
-		CONTROLS = false;
-		window.setTimeout( function(){ CONTROLS = true }, 1000 );
 
 	};
 
 	this.disconnect = function(){
 
-		vehicle.reset();
 		scene.remove( mesh );
 		scene.remove( emitter );
+		scope.reset();
 		scene.fog = new THREE.FogExp2( palette[0], 0 );
 		scene.remove( stage.generate.stars );
 
@@ -304,6 +169,7 @@ function Vehicle(){
 
 		if( U ){
 
+			ui.clear();
 			STARTTIME = performance.now()
 			AT = 0;
 			scope.START = true;
@@ -314,11 +180,11 @@ function Vehicle(){
 
 	this.reset = function(){
 
+		scene.remove( mesh );
+		scene.remove( emitter );
 		this.START = false;
 		this.END = false;
 		DNF = false;
-
-		CONTROLS = false;
 
 		control.UP = false;
 		control.DOWN = false;
@@ -332,7 +198,6 @@ function Vehicle(){
 
 		AT = 0;
 		CP = [];
-		REWARD = 0;
 		objective = 0;
 
 		position.copy( start );
@@ -340,16 +205,14 @@ function Vehicle(){
 
 		velocity.set( 0, 0, 0 );
 		lookAt.set( 0, 0, 1.0 );
-
-		mesh.copy( new THREE.LineSegments( models[ scope.MODEL ].clone(), material ) );
-
 		mesh.lookAt( lookAt );
 
 		rotation = 0; // Temporary Fix
 		angle = 0;
 
 		vhs.reset();
-		window.setTimeout( function(){ CONTROLS = true }, 1000 );
+		scene.add( mesh );
+		scene.add( emitter );
 
 	};
 
@@ -361,20 +224,20 @@ function Vehicle(){
 
 		}
 
-		if( !DNF && !scope.END && CONTROLS ){
+		if( !DNF && !scope.END ){
 
-			U = control.UP;
-			D = control.DOWN;
-			L = control.LEFT;
-			R = control.RIGHT;
+		U = control.UP;
+		D = control.DOWN;
+		L = control.LEFT;
+		R = control.RIGHT;
 
 		}
 		else{
 
-			U = false;
-			D = false;
-			L = false;
-			R = false;
+		U = false;
+		D = false;
+		L = false;
+		R = false;
 
 		};
 
@@ -384,7 +247,7 @@ function Vehicle(){
 		detect();
 		register();
 		rig();
-		
+
 	};
 
 	this.results = function(){
@@ -393,9 +256,30 @@ function Vehicle(){
 
 	}
 
-	this.AT = function(){ return AT };
+	this.display = function(){
 
-	this.CP = function(){ return CP.slice() }
+		for( let i = 0; i < CP.length; i++ ){
+
+			let n = i+1;
+			let text = 'cp' + n;
+			let cp = ui.getTextFloat( CP[i] );
+			while( text.length < 16-cp.length ){
+
+				text += ' ';
+
+			}
+
+			text += cp;
+
+			ui.textbox( text , 2, 6+i*2 );
+
+			let rank = ui.getTextFloat( ( stage.best[i]-CP[i] ), true )
+			ui.textbox( rank, Math.floor(ui.xl-2-16+(16-rank.length)), 6+i*2 );
+
+		}
+
+	};
+
 
 	this.replay = function( data ){
 
@@ -415,27 +299,13 @@ function Vehicle(){
 		mesh.rotateOnAxis( up, rotation );
 
 		let p = position.clone();
+		camera.lookAt( p );
 
-		let lerp = 1;
-		let look = 1;
+		p.x -= 20;
+		p.y += 20;
+		p.z += 10;
 
-		if( scope.CAMERA === CAMERA ){
-
- 			lerp = scope.cameras[1].lerp
-			look = 1;
-		}
-
-		CAMERA = scope.CAMERA;
-
-		p.x += scope.cameras[ scope.CAMERA ].x;
-		p.y += scope.cameras[ scope.CAMERA ].y;
-		p.z += scope.cameras[ scope.CAMERA ].z;
-
-		camera.position.lerp( p, lerp);
-
-		
-		scope.cameras[ CAMERA ].lookAt.lerp( position, look );
-		camera.lookAt( scope.cameras[ CAMERA ].lookAt );
+		camera.position.lerp( p, 0.05 );
 
 		if( CHECK ){
 
@@ -468,9 +338,9 @@ function Vehicle(){
 
 	function align(){
 
-		let steering = ( L && R ) ? 0 : ( L ) ? 1 : ( R ) ? -1 : 0;
+		let steering = ( L ) ? 1 : ( R ) ? -1 : 0;
 
-		if( steering != 0 && Math.abs( step ) < ease ){
+		if( ( L || R ) && Math.abs( step ) < ease ){
 
 			step += steering;
 
@@ -481,9 +351,9 @@ function Vehicle(){
 
 		}
 
-		angle = ( step / ease );
-
 // 		angle = ( ( step / param.ease ) / param.ease );
+
+		angle = ( step / param.ease);
 		
 		angle *= sensitivity;
 		
@@ -549,11 +419,13 @@ function Vehicle(){
 
 		stage.surface.raycast( raycaster, intersects );
 
+
 		if( intersects.length > 0 ){
 
 				contact.copy( intersects[0].point );
+// 				normal.copy( intersects[0].face.normal );
 
-				if( position.z < contact.z && Math.abs( position.z - contact.z ) < 5 ){
+				if( position.z < contact.z && Math.abs( position.z - contact.z ) < velocity.z + gravity.z  + 1){
 
 					TIME = 0;
 					CONTACT = true;
@@ -587,7 +459,7 @@ function Vehicle(){
 				if( TIME > TIMEOUT ){
 
 					DNF = true;
-					state.dnf();
+					MENU = true;
 // 					U = false;
 // 					D = false;
 
@@ -609,16 +481,13 @@ function Vehicle(){
 
 		intersects = [];
 
-		ray.copy( position );
-		ray.sub( last );
-
+		ray.copy( last );
+		ray.sub( position );
 		raycaster.far = ray.length();
 		ray.normalize();
-
 		raycaster.set( position, ray );
 
 		stage.generate.checkpoints[objective].collision.raycast( raycaster, intersects );
-		
 		CHECK = false
 
 		if( intersects.length > 0 ){
@@ -629,6 +498,8 @@ function Vehicle(){
 
 				CP[objective-1] = AT
 
+				scope.display()
+
 			};
 
 		if( objective == 4 ){
@@ -637,12 +508,7 @@ function Vehicle(){
 
 			if( AT < stage.best[3]  ){
 
-				REWARD = 100 + Math.floor( ( stage.best[3]-AT ) * 10 )				
-
-			}
-			else{
-
-				REWARD = 100;
+				REWARD = Math.round( ( stage.best[3]-AT ) * 10 )				
 
 			};
 
@@ -650,11 +516,9 @@ function Vehicle(){
 
 			objective = 0;
 			scope.END = true;
-
-// 			firebase.analytics().logEvent('stage_complete', { time: AT, distance: stage.generate.DISTANCE, rating: Math.round( stage.generate.DISTANCE/AT ) } );
-
-			state.complete();
-
+			MENU = true;
+			firebase.analytics().logEvent('stage_complete', { time: AT, distance: stage.generate.DISTANCE, rating: Math.round( stage.generate.DISTANCE/AT ) } );
+		 
 		} else if( !scope.END ) {
 
 			CHECK = true
@@ -671,8 +535,8 @@ function Vehicle(){
 
 		}
 
+		scope.TEXTTIME = ui.getTextFloat( AT );
 		scope.OBJECTIVE = objective;
-		last.copy( position );
 
 	};
 
@@ -680,9 +544,9 @@ function Vehicle(){
 
 		let lerp = ( DNF || scope.END ) ? 0.00001 : 0.1;
 		const p = direction.clone();
-		p.multiplyScalar( -scope.cameras[0].distance );
+		p.multiplyScalar( -20 );
 		p.add( mesh.position );
-		p.z += scope.cameras[0].z;
+		p.z += 7;
 		camera.position.lerp( p, lerp );
 
 		camera.lookAt( mesh.position );
@@ -746,68 +610,24 @@ function Vehicle(){
 		emitter.geometry.computeBoundingSphere();
 
 	}
+	this.tune = function( p ){
 
-	const tune = function( n ){
+		if( p.power != undefined && p.power > 0 && p.power < 1 ) param.power = p.power;
+		if( p.drag != undefined && p.drag > 0 && p.drag < 1 ) param.drag = p.drag;
+		if( p.sensitivity != undefined && p.sensitivity > 0 && p.sensitivity < 1 ) param.sensitivity = p.sensitivity;
+		if( p.ease != undefined ) param.ease = p.ease;
 
-		n = ( n < 0 ) ? 0 : ( n > 5 ) ? 5 : n;
+		power = limits.power.lo + param.power * ( limits.power.hi - limits.power.lo );
+		drag = limits.drag.lo + ( param.drag + 0.1 ) * ( limits.drag.hi - limits.drag.lo );
+		sensitivity = limits.sensitivity.lo + ( param.sensitivity + 0.1 ) * ( limits.sensitivity.hi - limits.sensitivity.lo );
+		ease = param.ease;
 
-		return( n );
-
-	}
-
-	this.tune = {
-
-		power: function( n = param.power ){
-
-			param.power = tune(n);
-			power = limits.power.lo + ( ( param.power ) / 5 ) * limits.power.range; 
-
-			},
-
-		drag: function(  n = param.drag ){
-
-			param.drag = tune(n);
-			drag = limits.drag.hi - ( ( param.drag ) / 5 ) * limits.drag.range; 
-
-			},
-
-		sensitivity:
-
-			function(  n = param.sensitivity ){
-
-			param.sensitivity = tune(n);
-			sensitivity = limits.sensitivity.lo + ( ( param.sensitivity ) / 5 ) * limits.sensitivity.range; 
-
-			},
-
-// 		ease:
-
-// 			function(  n = param.ease ){
-
-// 			param.ease = tune(n)
-// 			ease = limits.ease.lo + param.ease;
-
-// 			},
-
-	}
-
-	this.param = function(){
-
-		let array = Object.assign( param , [] );
-
-		return array;
-		
 	};
 
-	this.yen = function(){
+	this.getParam = function(){
 
-		return YEN;
-
-	}
-
-	this.debug = function(){
-
-		console.log(  'ROTATION:', rotation );
-	}
+		return param;
+		
+	};
 
 };
