@@ -1,0 +1,149 @@
+body{
+
+	background: #101010;
+	overflow: hidden;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+
+	font-size: 11px;
+	opacity: 1;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+
+}
+body{
+/* 	opacity: 1; */
+	transition: opacity 2s;
+
+}
+canvas {
+
+image-rendering: -moz-crisp-edges;
+
+image-rendering: -webkit-crisp-edges;
+
+image-rendering: crisp-edges;
+
+image-rendering: pixelated;
+
+-webkit-user-select: none;
+
+-moz-user-select: none;
+
+user-select: none;
+
+}
+
+#ui{
+
+top: 0px;
+
+left: 0px;
+
+image-rendering: pixelated;
+
+z-index: 99;
+
+position: fixed;
+
+cursor: crosshair;
+
+background-color: transparent;
+
+background-size: auto;
+
+background-repeat: no-repeat;
+
+background-position: center 25%;
+
+mix-blend-mode: lighten;
+
+/* animation: animation 100s linear infinite; */
+}
+
+.promo_a {
+
+	background-image: url('../img/ginko_promo.gif');
+
+}
+
+.promo_b {
+
+	background-image: url('../img/low_promo.gif');
+
+}
+
+
+.promo_c {
+
+	background-image: url('../img/r3_promo.gif');
+
+}
+
+.backdrop {
+
+	background-color: #10101099
+
+}
+#renderer{
+
+  z-index: 0;
+  position: fixed;
+
+}
+
+#promo{
+
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 200;
+	background-repeat: no-repeat;
+	background-size: contain;
+	background-position: center;
+/* 	background-image: url(../image/promo.gif);
+	background-color: #d9b5ff;
+	mix-blend-mode: lighten; */
+
+}
+
+img{
+
+	mix-blend-mode: lighten;
+	z-index: 98;
+
+}
+
+a{
+	display: block;
+	position: fixed;
+	z-index: 400;
+	cursor: crosshair;
+}
+
+a:hover{
+/* 	cursor: crosshair; */
+}
+
+input, form{
+
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    font-family: monospace;
+	z-index: 300;
+	background: #ddd;
+	letter-spacing: 0;
+	opacity: 0;
+	vertical-align: middle;
+
+}
