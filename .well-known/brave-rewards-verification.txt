@@ -1,0 +1,4 @@
+This is a Brave Rewards publisher verification file.
+
+Domain: specialstage.io
+Token: a660d037c0fae0f9bb15a7d736f6412942854bf3b452914460d395e743394d2d
